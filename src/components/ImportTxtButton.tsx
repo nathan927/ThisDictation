@@ -1,0 +1,45 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDictation } from '../context/DictationContext';
+
+const ImportTxtButton: React.FC = () => {
+  const { t } = useTranslation();
+  const { setWordSets } = useDictation();
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const text = await file.text();
+        const importedWords = text
+          .split('\n')
+          .map(word => word.trim())
+          .filter(word => word.length > 0);
+        
+        // The context will handle appending these words
+        setWordSets(importedWords);
+
+        // Clear input
+        event.target.value = '';
+      } catch (error) {
+        console.error('Error importing file:', error);
+      }
+    }
+  };
+
+  return (
+    <div className="relative">
+      <input
+        type="file"
+        accept=".txt"
+        onChange={handleFileChange}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      />
+      <button className="w-full px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+        {t('Import TXT')}
+      </button>
+    </div>
+  );
+};
+
+export default ImportTxtButton; 
