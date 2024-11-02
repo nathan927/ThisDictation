@@ -3,20 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   base: '/ThisDictation/',
-  plugins: [react()],
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
-  server: {
-    port: 3000,
-    open: true,
-    host: true
-  },
-  preview: {
-    port: 3000
-  },
-  optimizeDeps: {
-    include: ['@headlessui/react']
-  }
+  plugins: [react()]
 }); 

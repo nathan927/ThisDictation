@@ -16,11 +16,10 @@ interface DictationPlayerProps {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, currentWordIndex, isPlaying, setWordSets } = useDictation();
+  const { wordSets, currentWordIndex, isPlaying, setWordSets, setIsPlaying } = useDictation();
   const {
     playDictation,
     pauseDictation,
-    resumeDictation,
     stopDictation,
     nextWord,
     previousWord
@@ -31,7 +30,8 @@ const DictationPlayer: React.FC = () => {
       pauseDictation();
     } else {
       if (window.speechSynthesis.paused) {
-        resumeDictation();
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
       } else {
         playDictation();
       }
@@ -77,11 +77,6 @@ const DictationPlayer: React.FC = () => {
   // Helper function to get word text
   const getWordText = (word: string | { text: string }) => {
     return typeof word === 'string' ? word : word.text;
-  };
-
-  const resumeDictation = () => {
-    window.speechSynthesis.resume();
-    setIsPlaying(true);
   };
 
   return (
