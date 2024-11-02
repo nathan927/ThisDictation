@@ -3,6 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
 
+// Add resumeDictation to the type definition
+interface DictationPlayerProps {
+  playDictation: () => void;
+  pauseDictation: () => void;
+  resumeDictation: () => void;
+  stopDictation: () => void;
+  nextWord: () => void;
+  previousWord: () => void;
+  repetitionCount: number;
+}
+
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
   const { wordSets, currentWordIndex, isPlaying, setWordSets } = useDictation();

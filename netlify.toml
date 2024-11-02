@@ -1,19 +1,5 @@
 [build]
   command = """
-    echo "Checking for required config files..."
-    if [ ! -f tsconfig.node.json ]; then
-      echo "Creating tsconfig.node.json..."
-      echo '{
-        "compilerOptions": {
-          "composite": true,
-          "skipLibCheck": true,
-          "module": "ESNext",
-          "moduleResolution": "bundler",
-          "allowSyntheticDefaultImports": true
-        },
-        "include": ["vite.config.ts"]
-      }' > tsconfig.node.json
-    fi
     npm install --save-dev @rollup/rollup-linux-x64-gnu
     npm install
     npm run build

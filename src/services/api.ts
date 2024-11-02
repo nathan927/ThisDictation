@@ -1,5 +1,23 @@
 import axios from 'axios';
 
+// Add type definition for import.meta.env
+interface ImportMetaEnv {
+  VITE_API_URL: string;
+  // Add other env variables as needed
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+// Fix SpeechRecognition type
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 

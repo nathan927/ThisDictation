@@ -72,7 +72,7 @@ export const useDictationPlayback = () => {
   const playCurrentWord = async () => {
     if (!isPlaying || wordSets.length === 0) return;
 
-    const currentWord = wordSets[currentWordIndex];
+    const currentWord = wordSets[currentWordIndex] as WordWithAudio;
     if (!currentWord) return;
 
     for (let i = 0; i < settings.repetitions; i++) {
