@@ -26,8 +26,8 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "gh-pages": "^6.2.0",
     "typescript": "latest",
-    "vite": "latest",
-    "@rollup/rollup-linux-x64-gnu": "latest"
+    "vite": "latest"
   }
 }
