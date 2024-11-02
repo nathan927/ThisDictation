@@ -3,5 +3,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   base: '/ThisDictation/',
-  plugins: [react()]
+  plugins: [react()],
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  }
 }); 
