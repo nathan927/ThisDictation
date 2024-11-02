@@ -3,7 +3,7 @@ import { useDictation } from '../context/DictationContext';
 
 interface WordWithAudio {
   text: string;
-  audioUrl: string;
+  audioUrl?: string;
 }
 
 export const useDictationPlayback = () => {

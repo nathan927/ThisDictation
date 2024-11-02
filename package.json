@@ -23,6 +23,7 @@
     "react-media-recorder": "^1.6.6"
   },
   "devDependencies": {
+    "@types/node": "^22.8.6",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",

@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { transcribeAudio } from '../services/api';
 
-const VoiceUpload: React.FC = () => {
+interface VoiceUploadProps {
+  onConfirm: (words: string[]) => void;
+  onClose: () => void;
+}
+
+const VoiceUpload: React.FC<VoiceUploadProps> = ({ onConfirm, onClose: handleClose }) => {
   const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);

@@ -79,6 +79,11 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
+  const resumeDictation = () => {
+    window.speechSynthesis.resume();
+    setIsPlaying(true);
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">Dictation Player</h2>
