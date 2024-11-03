@@ -6,10 +6,12 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    sourcemap: true
-  },
-  define: {
-    'process.env.VITE_DEEPGRAM_API_KEY': JSON.stringify(process.env.VITE_DEEPGRAM_API_KEY),
-    'process.env.VITE_OCR_API_KEY': JSON.stringify(process.env.VITE_OCR_API_KEY)
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
+      }
+    }
   }
 }); 

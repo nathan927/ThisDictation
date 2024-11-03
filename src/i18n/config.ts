@@ -153,7 +153,7 @@ const resources = {
       'User Guide': '使用指南',
       'Welcome to ThisDictation Helper!': '欢迎使用 ThisDictation 听写助手！',
       'user_guide.introduction': 'ThisDictation 听写助手是您制作和练习听写的完美伴侣。无论您是准备教材的老师，还是帮助孩子提高语言能力的家长，我们的工具都能让这个过程变得简单有效。',
-      'user_guide.feature_1': '多种输入方式：文字、语音和图片识别',
+      'user_guide.feature_1': '多种输入方式：字、语音和图片识别',
       'user_guide.feature_2': '可自定义朗读速度和间隔时间',
       'user_guide.feature_3': '支持多种语言（英语、粤语、普通话）',
       'user_guide.feature_4': '逐字播放并可设定重复次数',
