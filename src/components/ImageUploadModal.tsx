@@ -21,8 +21,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   const handleImageUpload = async (file: File) => {
     setIsProcessing(true);
     try {
-      const result = await createWorker().recognize(file, 'eng+chi_tra+chi_sim');
-      setRecognizedText(result.data.text);
+      const worker = await createWorker();
+      await worker.loadLanguage('eng+chi_tra+chi_sim');
+      await worker.initialize('eng+chi_tra+chi_sim');
+      const { data: { text } } = await worker.recognize(file);
+      setRecognizedText(text);
+      await worker.terminate();
     } catch (error) {
       console.error('OCR Error:', error);
     } finally {
