@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '@headlessui/react';
-import Tesseract from 'tesseract.js';
+import { useDictation } from '../context/DictationContext';
+import { performOCR, OCRError } from '../services/api';
 
 interface ImageUploadModalProps {
   isOpen: boolean;
