@@ -59,6 +59,19 @@ const DictationPlayer: React.FC = () => {
     );
   };
 
+  const handleExport = () => {
+    const text = wordSets.map(word => getWordText(word)).join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dictation_words.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-4">{t('Dictation Player')}</h2>
@@ -109,18 +122,7 @@ const DictationPlayer: React.FC = () => {
 
         <div className="flex justify-center space-x-2">
           <button
-            onClick={() => {
-              const text = wordSets.join('\n');
-              const blob = new Blob([text], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'dictation_words.txt';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }}
+            onClick={handleExport}
             disabled={wordSets.length === 0}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
           >
