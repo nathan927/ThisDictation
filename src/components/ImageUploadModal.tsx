@@ -34,25 +34,26 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-10 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-        <div className="relative bg-white rounded-lg p-6 max-w-md w-full mx-4">
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
+          <Dialog.Title className="text-lg font-medium mb-4">{t('Image Upload')}</Dialog.Title>
+          
           <div className="space-y-4">
+            <CameraUpload onCapture={handleFileSelect} />
+            <div className="text-center text-gray-500">{t('or')}</div>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="w-full"
             />
-            <div className="text-center">
-              <span className="text-gray-500">- {t('or')} -</span>
-            </div>
-            <CameraUpload onCapture={handleFileSelect} />
-            {isProcessing && <div className="text-center">Processing...</div>}
-            {error && <div className="text-red-500">{error}</div>}
           </div>
-        </div>
+
+          {isProcessing && <div className="mt-4">Processing...</div>}
+          {error && <div className="mt-4 text-red-500">{error}</div>}
+        </Dialog.Panel>
       </div>
     </Dialog>
   );
