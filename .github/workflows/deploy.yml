@@ -25,9 +25,11 @@ jobs:
         env:
           VITE_BASE_URL: /ThisDictation
         
-      - name: Add .nojekyll
+      - name: Add .nojekyll and configure headers
         run: |
           touch dist/.nojekyll
+          echo '/*.js    Content-Type: application/javascript' > dist/_headers
+          echo '/*.mjs   Content-Type: application/javascript' >> dist/_headers
           
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
