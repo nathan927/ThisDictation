@@ -53,7 +53,11 @@ const resources = {
       'Select a txt file': 'Select a txt file',
       'Document Language': 'Document Language',
       'Traditional Chinese': 'Traditional Chinese',
-      'Simplified Chinese': 'Simplified Chinese'
+      'Simplified Chinese': 'Simplified Chinese',
+      'User Guide': 'Guide',
+      'Dictation Player': 'Dictation Player',
+      'Open Camera': 'Open Camera',
+      'Take Photo': 'Take Photo',
     }
   },
   'zh-TW': {
@@ -97,13 +101,13 @@ const resources = {
       'user_guide.introduction': 'ThisDictation 默書助手是您製作和練習默書的最佳夥伴。無論您是準備教材的老師，還是幫助孩子提升語言能力的家長，我們的工具都能讓這個過程變得簡單有效。',
       'user_guide.feature_1': '多種輸入方式：文字、語音和圖片識別',
       'user_guide.feature_2': '可自訂朗讀速度和間隔時間',
-      'user_guide.feature_3': '支援多種語言（英語、粵語、普通話）',
+      'user_guide.feature_3': '支援多種語言（英語、廣東話、普通話）',
       'user_guide.feature_4': '逐字播放並可設定重複次數',
       'user_guide.feature_5': '輕鬆匯出和匯入詞組列表，方便分享和複習',
       'user_guide.getting_started': '開始使用時，只需在文字區域輸入詞組，或使用語音/圖片上傳。您也可以使用「匯入文字檔」按鈕匯入現有的詞組列表。練習完成後，可以匯出詞組列表以供日後使用或分享！',
       'Got it!': '知道了！',
       'English': '英語',
-      'Cantonese': '粵語',
+      'Cantonese': '廣東話',
       'Mandarin': '普通話',
       'Number of Repetitions': '重複次數',
       'Reading Interval': '朗讀間隔',
@@ -111,14 +115,18 @@ const resources = {
       'Select a txt file': '選擇文字檔',
       'Document Language': '文件語言',
       'Traditional Chinese': '繁體中文',
-      'Simplified Chinese': '簡體中文'
+      'Simplified Chinese': '簡體中文',
+      'User Guide': '說明',
+      'Dictation Player': '默書播放器',
+      'Open Camera': '開啟相機',
+      'Take Photo': '拍照',
     }
   },
   'zh-CN': {
     translation: {
       'ThisDictation Helper': 'ThisDictation 听写助手',
       'Content Input': '内容输入',
-      'Enter words (one per line)': '输入词组（每行當作一个词组）',
+      'Enter words (one per line)': '输入词组每行当作一个词组）',
       'Text Upload': '文字上传',
       'Voice Upload': '语音上传',
       'Image Upload': '图片上传',
@@ -151,8 +159,8 @@ const resources = {
       'word(s)': '个词组',
       'Key Features:': '主要功能：',
       'User Guide': '使用指南',
-      'Welcome to ThisDictation Helper!': '欢迎使用 ThisDictation 听写助手！',
-      'user_guide.introduction': 'ThisDictation 听写助手是您制作和练习听写的完美伴侣。无论您是准备教材的老师，还是帮助孩子提高语言能力的家长，我们的工具都能让这个过程变得简单有效。',
+      'Welcome to ThisDictation Helper!': '欢迎使用 ThisDictation 默书助手！',
+      'user_guide.introduction': 'ThisDictation 默书助手是您制作和练习听写的完美伴侣。无论您是准备教材的老师，还是帮助孩子提高语言能力的家长，我们的工具都能让这个过程变得简单有效。',
       'user_guide.feature_1': '多种输入方式：字、语音和图片识别',
       'user_guide.feature_2': '可自定义朗读速度和间隔时间',
       'user_guide.feature_3': '支持多种语言（英语、粤语、普通话）',
@@ -170,7 +178,11 @@ const resources = {
       'Select a txt file': '选择文本文件',
       'Document Language': '文件语言',
       'Traditional Chinese': '繁体中文',
-      'Simplified Chinese': '简体中文'
+      'Simplified Chinese': '简体中文',
+      'User Guide': '说明',
+      'Dictation Player': '默书播放器',
+      'Open Camera': '打开相机',
+      'Take Photo': '拍照',
     }
   }
 };
@@ -179,8 +191,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'zh-TW',
+    fallbackLng: 'zh-TW',
     interpolation: {
       escapeValue: false
     }

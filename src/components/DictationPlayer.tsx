@@ -16,7 +16,7 @@ interface DictationPlayerProps {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, currentWordIndex, isPlaying, setWordSets, setIsPlaying } = useDictation();
+  const { wordSets, currentWordIndex, isPlaying, setWordSets, setCurrentWordIndex } = useDictation();
   const {
     playDictation,
     pauseDictation,
@@ -79,15 +79,37 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
+  const handleDelete = () => {
+    if (wordSets.length === 0) return;
+    
+    const newWords = [...wordSets];
+    newWords.splice(currentWordIndex, 1);
+    setWordSets(newWords);
+    stopDictation();
+    
+    // Adjust currentWordIndex if we're at the end of the list
+    if (currentWordIndex >= newWords.length) {
+      setCurrentWordIndex(Math.max(0, newWords.length - 1));
+    }
+  };
+
+  const handleDeleteAll = () => {
+    if (window.confirm(t('Are you sure you want to delete all words?'))) {
+      setWordSets([]);
+      stopDictation();
+      setCurrentWordIndex(0);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Dictation Player</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('Dictation Player')}</h2>
       
       <div className="mb-4">
         <div className="text-center text-2xl font-bold mb-4">
           {wordSets[currentWordIndex] ? 
             getWordText(wordSets[currentWordIndex]) : 
-            'No words added'}
+            t('No words added')}
         </div>
         
         <div className="text-sm text-gray-500 text-center">
@@ -132,22 +154,14 @@ const DictationPlayer: React.FC = () => {
 
       <div className="flex justify-center gap-2">
         <button
-          onClick={() => {
-            const newWords = [...wordSets];
-            newWords.splice(currentWordIndex, 1);
-            setWordSets(newWords);
-          }}
+          onClick={handleDelete}
           className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
           disabled={wordSets.length === 0}
         >
           {t('Delete')}
         </button>
         <button
-          onClick={() => {
-            if (window.confirm(t('Are you sure you want to delete all words?'))) {
-              setWordSets([]);
-            }
-          }}
+          onClick={handleDeleteAll}
           className="bg-yellow-700 text-white px-4 py-2 rounded hover:bg-yellow-800"
           disabled={wordSets.length === 0}
         >
