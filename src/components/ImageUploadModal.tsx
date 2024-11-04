@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '@headlessui/react';
-import { createWorker } from 'tesseract.js';
+import { createWorker, Worker } from 'tesseract.js';
 
 interface ImageUploadModalProps {
   isOpen: boolean;
@@ -20,16 +20,20 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
 
   const handleImageUpload = async (file: File) => {
     setIsProcessing(true);
+    let worker: Worker | null = null;
     try {
-      const worker = await createWorker();
+      worker = await createWorker();
+      await worker.load();
       await worker.loadLanguage('eng+chi_tra+chi_sim');
       await worker.initialize('eng+chi_tra+chi_sim');
-      const { data: { text } } = await worker.recognize(file);
-      setRecognizedText(text);
-      await worker.terminate();
+      const result = await worker.recognize(file);
+      setRecognizedText(result.data.text);
     } catch (error) {
       console.error('OCR Error:', error);
     } finally {
+      if (worker) {
+        await worker.terminate();
+      }
       setIsProcessing(false);
     }
   };
