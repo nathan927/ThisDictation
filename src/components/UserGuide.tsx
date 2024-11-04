@@ -12,7 +12,7 @@ const UserGuide: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
       >
-        {t('User Guide')}
+        {t('Guide')}
       </button>
 
       <Dialog
