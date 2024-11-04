@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface CameraUploadProps {
@@ -48,20 +48,26 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   return (
     <div className="mt-4">
-      <video ref={videoRef} className="w-full max-w-md mx-auto" />
+      <video ref={videoRef} className="w-full max-w-md mx-auto" style={{ display: isStreaming ? 'block' : 'none' }} />
       {!isStreaming ? (
         <button
           onClick={startCamera}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+          className="w-full px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
         >
           {t('Open Camera')}
         </button>
       ) : (
         <button
           onClick={takePhoto}
-          className="mt-2 bg-green-500 text-white px-4 py-2 rounded"
+          className="w-full px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           {t('Take Photo')}
         </button>

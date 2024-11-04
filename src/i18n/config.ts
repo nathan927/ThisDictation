@@ -34,7 +34,11 @@ const resources = {
       'There is no word to be added.': 'There is no word to be added.',
       'Word Progress': 'Word Progress',
       'Current Repetition': 'Current Repetition',
+<<<<<<< HEAD
       'No words added': 'No words added',
+=======
+      'No words added': 'No words added', 
+>>>>>>> gh-pages
       'of': 'of',
       'word(s)': 'word(s)',
       'Key Features:': 'Key Features:',
@@ -54,10 +58,16 @@ const resources = {
       'Document Language': 'Document Language',
       'Traditional Chinese': 'Traditional Chinese',
       'Simplified Chinese': 'Simplified Chinese',
+<<<<<<< HEAD
       'User Guide': 'Guide',
       'Dictation Player': 'Dictation Player',
       'Open Camera': 'Open Camera',
       'Take Photo': 'Take Photo',
+=======
+      'Open Camera': 'Open Camera',
+      'Take Photo': 'Take Photo',
+      'or': 'or'
+>>>>>>> gh-pages
     }
   },
   'zh-TW': {
@@ -116,17 +126,29 @@ const resources = {
       'Document Language': '文件語言',
       'Traditional Chinese': '繁體中文',
       'Simplified Chinese': '簡體中文',
+<<<<<<< HEAD
       'User Guide': '說明',
       'Dictation Player': '默書播放器',
       'Open Camera': '開啟相機',
       'Take Photo': '拍照',
+=======
+      'Open Camera': '開啟相機',
+      'Take Photo': '拍照',
+      'or': '或'
+>>>>>>> gh-pages
     }
   },
   'zh-CN': {
     translation: {
+<<<<<<< HEAD
       'ThisDictation Helper': 'ThisDictation 听写助手',
       'Content Input': '内容输入',
       'Enter words (one per line)': '输入词组每行当作一个词组）',
+=======
+      'ThisDictation Helper': 'ThisDictation 默书助手',
+      'Content Input': '内容输入',
+      'Enter words (one per line)': '输入词组（每行當作一个词组）',
+>>>>>>> gh-pages
       'Text Upload': '文字上传',
       'Voice Upload': '语音上传',
       'Image Upload': '图片上传',
@@ -179,10 +201,16 @@ const resources = {
       'Document Language': '文件语言',
       'Traditional Chinese': '繁体中文',
       'Simplified Chinese': '简体中文',
+<<<<<<< HEAD
       'User Guide': '说明',
       'Dictation Player': '默书播放器',
       'Open Camera': '打开相机',
       'Take Photo': '拍照',
+=======
+      'Open Camera': '打开相机',
+      'Take Photo': '拍照',
+      'or': '或'
+>>>>>>> gh-pages
     }
   }
 };
@@ -191,8 +219,13 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+<<<<<<< HEAD
     lng: 'zh-TW',
     fallbackLng: 'zh-TW',
+=======
+    lng: 'en',
+    fallbackLng: 'en',
+>>>>>>> gh-pages
     interpolation: {
       escapeValue: false
     }
