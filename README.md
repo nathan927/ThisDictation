@@ -1,76 +1,6 @@
 # ThisDictation 📚
 
-[English](#english) | [繁體中文](#繁體中文)
-
-# English
-
-ThisDictation is a modern, user-friendly dictation practice tool that helps users improve their listening and writing skills in multiple languages.
-
-## ✨ Features
-
-### Multiple Input Methods
-- 🎙️ **Voice Recording**
-  - Record your own voice for personalized practice
-  - Playback your recordings with perfect pronunciation
-  - Edit transcribed text as needed
-
-- 📝 **Text Input**
-  - Type or paste words directly
-  - Support for multiple languages
-  - Easy editing and organization
-
-- 📸 **OCR (Optical Character Recognition)**
-  - Import words from images
-  - Supports various image formats
-  - Automatic text extraction
-
-- 📄 **Text File Import**
-  - Import word lists from .txt files
-  - Automatically adds to existing word sets
-  - Maintain formatting and organization
-
-### Smart Playback
-- 🔄 **Customizable Repetitions**
-  - Set number of repetitions per word
-  - Adjust interval between repetitions
-  - Control playback speed
-
-- 🗣️ **Multiple Language Support**
-  - English
-  - Mandarin Chinese
-  - Cantonese
-  - Customizable pronunciation settings
-
-- 🎮 **Intuitive Controls**
-  - Play/Pause/Stop functionality
-  - Next/Previous word navigation
-  - Progress tracking
-
-### User-Friendly Features
-- 📊 **Progress Tracking**
-  - Visual progress bar
-  - Word count display
-  - Current position indicator
-
-- 🎯 **Practice Management**
-  - Delete individual words
-  - Clear all words
-  - Export word lists
-
-- 💾 **Data Persistence**
-  - Auto-save functionality
-  - Export capabilities
-  - Session management
-
-## 🚀 Getting Started
-
-1. Visit [ThisDictation](https://thisdictation.vercel.app/)
-2. Choose your preferred input method
-3. Add words to your practice set
-4. Customize your dictation settings
-5. Start practicing!
-
----
+ [繁體中文](#繁體中文)
 
 # 繁體中文
 
@@ -148,13 +78,6 @@ ThisDictation 是一個現代化、用戶友好的聽寫練習工具，幫助用
 - Tailwind CSS
 - Speech Synthesis API
 - OCR 技術
-
-## 🤝 參與貢獻
-
-歡迎參與貢獻！您可以：
-- 報告問題
-- 提出功能建議
-- 提交程式碼
 
 ## 📄 License | 版權聲明
 
