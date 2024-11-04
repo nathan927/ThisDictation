@@ -1,0 +1,16 @@
+[build]
+  command = """
+    npm install --save-dev @rollup/rollup-linux-x64-gnu
+    npm install
+    npm run build
+  """
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--no-optional"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
