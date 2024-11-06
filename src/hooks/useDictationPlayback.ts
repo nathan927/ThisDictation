@@ -112,7 +112,7 @@ export const useDictationPlayback = () => {
     if (audioRef.current) {
       audioRef.current.pause();
     }
-    window.speechSynthesis.pause();
+    window.speechSynthesis.cancel();
     setIsPlaying(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);

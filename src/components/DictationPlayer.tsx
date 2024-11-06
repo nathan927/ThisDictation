@@ -10,9 +10,8 @@ interface Word {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, deleteWord, deleteAllWords } = useDictation();
+  const { wordSets, deleteWord, deleteAllWords, isPlaying, setIsPlaying } = useDictation();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const { playDictation, pauseDictation, nextWord, previousWord } = useDictationPlayback();
 
   const handleDelete = () => {
