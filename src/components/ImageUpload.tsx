@@ -5,6 +5,7 @@ import { performOCR } from '../services/api';
 const ImageUpload: React.FC<{ onUpload: (text: string) => void }> = ({ onUpload }) => {
   const { t, i18n } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   const handleFileUpload = async (file: File) => {
     try {
