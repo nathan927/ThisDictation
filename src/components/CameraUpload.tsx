@@ -11,6 +11,14 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsStreaming(false);
+  };
+
   const startCamera = async () => {
     try {
       const constraints = {
@@ -53,19 +61,10 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
     }
   };
 
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
-      setIsStreaming(false);
-    }
-  };
-
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
+      stopCamera();
     };
   }, []);
 
@@ -75,8 +74,7 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
         ref={videoRef} 
         className="w-full h-auto max-w-md mx-auto mb-4 rounded-lg" 
         style={{ 
-          display: isStreaming ? 'block' : 'none',
-          transform: 'scaleX(-1)'  // Mirror the preview
+          display: isStreaming ? 'block' : 'none'
         }} 
         playsInline 
         autoPlay
