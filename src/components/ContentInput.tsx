@@ -34,8 +34,8 @@ const ContentInput: React.FC = () => {
       reader.onload = (e) => {
         const text = e.target?.result as string;
         const words = text.split('\n')
-          .filter(word => word.trim())
-          .map(word => ({ text: word.trim() }));
+          .map(word => word.trim())
+          .filter(word => word.length > 0);
         setWordSets(words);
       };
       reader.readAsText(file);

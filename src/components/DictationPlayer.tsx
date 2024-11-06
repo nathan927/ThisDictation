@@ -13,6 +13,7 @@ const DictationPlayer: React.FC = () => {
   const { wordSets, deleteWord, deleteAllWords } = useDictation();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { playDictation, pauseDictation, nextWord, previousWord } = useDictationPlayback();
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
