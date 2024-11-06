@@ -11,26 +11,12 @@ interface ImageUploadModalProps {
 }
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, onConfirm }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { setWordSets } = useDictation();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [recognizedText, setRecognizedText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const getDefaultLanguage = () => {
-    switch (i18n.language) {
-      case 'zh-TW': return 'cht';
-      case 'zh-CN': return 'chs';
-      default: return 'eng';
-    }
-  };
-  
-  const [selectedLanguage, setSelectedLanguage] = useState(getDefaultLanguage());
-
-  useEffect(() => {
-    setSelectedLanguage(getDefaultLanguage());
-  }, [i18n.language]);
 
   const processImage = async (file: File) => {
     setError(null);
@@ -39,7 +25,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     setSelectedImage(file);
 
     try {
-      const text = await performOCR(file, selectedLanguage);
+      const text = await performOCR(file);
       if (!text) throw new Error('No text was recognized');
       setRecognizedText(text);
     } catch (err) {
@@ -58,17 +44,10 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     if (file) await processImage(file);
   };
 
-  const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLanguage = e.target.value;
-    setSelectedLanguage(newLanguage);
-    if (selectedImage) await processImage(selectedImage);
-  };
-
   const handleClose = () => {
     setSelectedImage(null);
     setRecognizedText('');
     setError(null);
-    setSelectedLanguage(getDefaultLanguage());
     onClose();
   };
 
@@ -97,21 +76,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
 
           <div className="space-y-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <label className="min-w-32 text-sm font-medium text-gray-700">
-                  {t('Document Language')}:
-                </label>
-                <select
-                  value={selectedLanguage}
-                  onChange={handleLanguageChange}
-                  className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="eng">{t('English')}</option>
-                  <option value="cht">{t('Traditional Chinese')}</option>
-                  <option value="chs">{t('Simplified Chinese')}</option>
-                </select>
-              </div>
-
               <input
                 type="file"
                 accept="image/*"
@@ -148,22 +112,22 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                 placeholder={t('Recognized text will appear here')}
               />
             )}
-          </div>
 
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              onClick={handleClose}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              {t('Cancel')}
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={!recognizedText || isProcessing}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-            >
-              {t('Confirm')}
-            </button>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={!recognizedText || isProcessing}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+              >
+                {t('Confirm')}
+              </button>
+            </div>
           </div>
         </Dialog.Panel>
       </div>

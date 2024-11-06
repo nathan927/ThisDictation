@@ -143,7 +143,7 @@ const resizeImage = async (file: File, maxSizeKB: number = 1024): Promise<Blob> 
   });
 };
 
-export const performOCR = async (imageFile: File, language: string = 'eng'): Promise<string> => {
+export const performOCR = async (imageFile: File): Promise<string> => {
   try {
     // Resize image before sending to API
     const resizedImageBlob = await resizeImage(imageFile);
@@ -152,45 +152,36 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     });
 
     const formData = new FormData();
-    formData.append('file', resizedImageFile);
-    formData.append('apikey', OCR_API_KEY);
-    formData.append('language', language);
-    formData.append('isOverlayRequired', 'false');
+    formData.append('image', resizedImageFile);
     formData.append('detectOrientation', 'true');
-    formData.append('scale', 'true');
-    formData.append('OCREngine', '2');
+    formData.append('detectLanguage', 'true'); // Enable auto language detection
 
-    // Changed the API endpoint to use HTTPS
-    const response = await axios.post(
-      'https://api8.ocr.space/parse/image',  // Changed from api.ocr.space to api8.ocr.space
-      formData,
-      {
-        headers: {
-          'apikey': OCR_API_KEY,
-        },
-        timeout: 30000 // 30 seconds timeout
-      }
-    );
+    const response = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: {
+        'apikey': process.env.VITE_OCR_API_KEY || '',
+      },
+      body: formData
+    });
 
-    if (!response.data) {
-      throw new OCRError('No response from OCR service');
+    if (!response.ok) {
+      throw new OCRError('Failed to process image');
     }
 
-    if (response.data.ErrorMessage) {
-      throw new OCRError(response.data.ErrorMessage);
+    const result = await response.json();
+    
+    if (result.IsErroredOnProcessing) {
+      throw new OCRError(result.ErrorMessage || 'Failed to process image');
     }
 
-    if (!response.data.ParsedResults?.[0]?.ParsedText) {
-      throw new OCRError('No text found in image');
+    if (!result.ParsedResults?.[0]?.ParsedText) {
+      throw new OCRError('No text was recognized');
     }
 
-    return response.data.ParsedResults[0].ParsedText.trim();
+    return result.ParsedResults[0].ParsedText;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNABORTED') {
-        throw new OCRError('Request timed out. Please try again.');
-      }
-      throw new OCRError(`OCR API Error: ${error.message}`);
+    if (error instanceof OCRError) {
+      throw error;
     }
     throw new OCRError('Failed to process image');
   }
