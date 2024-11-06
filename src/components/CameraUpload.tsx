@@ -9,34 +9,47 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const constraints = {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        }
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
         setIsStreaming(true);
+        streamRef.current = stream;
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
+      alert(t('Failed to access camera. Please check permissions.'));
     }
   };
 
   const takePhoto = () => {
-    if (videoRef.current) {
+    if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext('2d');
-      ctx?.drawImage(videoRef.current, 0, 0);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-          onCapture(file);
-          stopCamera();
-        }
-      }, 'image/jpeg');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+            onCapture(file);
+            stopCamera();
+          }
+        }, 'image/jpeg', 0.95);
+      }
     }
   };
 
@@ -50,13 +63,24 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
 
   useEffect(() => {
     return () => {
-      stopCamera();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
   return (
     <div className="mt-4">
-      <video ref={videoRef} className="w-full max-w-md mx-auto" style={{ display: isStreaming ? 'block' : 'none' }} />
+      <video 
+        ref={videoRef} 
+        className="w-full h-auto max-w-md mx-auto mb-4" 
+        style={{ 
+          display: isStreaming ? 'block' : 'none',
+          transform: 'scaleX(-1)'  // Mirror the preview
+        }} 
+        playsInline 
+        autoPlay
+      />
       {!isStreaming ? (
         <button
           onClick={startCamera}
