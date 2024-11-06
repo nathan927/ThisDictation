@@ -9,22 +9,39 @@ interface DictationSettings {
 }
 
 interface DictationContextType {
-  wordSets: Array<string | { text: string; audioUrl?: string }>;
+  wordSets: string[];
   currentWordIndex: number;
   isPlaying: boolean;
   settings: DictationSettings;
-  setWordSets: (newWordsOrUpdater: Array<string | { text: string; audioUrl?: string }> | 
-    ((prev: Array<string | { text: string; audioUrl?: string }>) => Array<string | { text: string; audioUrl?: string }>)) => void;
+  setWordSets: React.Dispatch<React.SetStateAction<string[]>>;
+  deleteWord: (index: number) => void;
+  deleteAllWords: () => void;
   setCurrentWordIndex: (index: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setSettings: (settings: DictationSettings) => void;
 }
 
-const DictationContext = createContext<DictationContextType | null>(null);
+export const DictationContext = createContext<DictationContextType>({
+  wordSets: [],
+  currentWordIndex: 0,
+  isPlaying: false,
+  settings: {
+    repetitions: 3,
+    interval: 2,
+    speed: 1,
+    pronunciation: 'English'
+  },
+  setWordSets: () => {},
+  deleteWord: () => {},
+  deleteAllWords: () => {},
+  setCurrentWordIndex: () => {},
+  setIsPlaying: () => {},
+  setSettings: () => {}
+});
 
 export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
-  const [wordSets, setWordSets] = useState<Array<string | { text: string; audioUrl?: string }>>([]);
+  const [wordSets, setWordSets] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -54,20 +71,22 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   }, [i18n.language]);
 
+  const deleteWord = (index: number) => {
+    setWordSets(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const deleteAllWords = () => {
+    setWordSets([]);
+  };
+
   const value = {
     wordSets,
     currentWordIndex,
     isPlaying,
     settings,
-    setWordSets: (newWordsOrUpdater: Array<string | { text: string; audioUrl?: string }> | 
-      ((prev: Array<string | { text: string; audioUrl?: string }>) => Array<string | { text: string; audioUrl?: string }>)) => {
-      if (typeof newWordsOrUpdater === 'function') {
-        setWordSets(newWordsOrUpdater);
-      } else {
-        // Append new words to existing ones instead of replacing
-        setWordSets(prevWords => [...prevWords, ...newWordsOrUpdater]);
-      }
-    },
+    setWordSets: setWordSets,
+    deleteWord,
+    deleteAllWords,
     setCurrentWordIndex,
     setIsPlaying,
     setSettings

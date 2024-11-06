@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
@@ -10,31 +10,24 @@ interface Word {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, setWordSets, currentWordIndex, setCurrentWordIndex } = useDictation();
-  const { playDictation, pauseDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
-  const { isPlaying } = useDictation();
-
-  // Helper function to get word text
-  const getWordText = (word: string | { text: string }) => {
-    return typeof word === 'string' ? word : word.text;
-  };
+  const { wordSets, deleteWord, deleteAllWords } = useDictation();
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleDelete = () => {
-    if (wordSets.length > 0) {
-      const newWordSets = [...wordSets];
-      newWordSets.splice(currentWordIndex, 1);
-      setWordSets(newWordSets);
-      if (currentWordIndex >= newWordSets.length) {
-        setCurrentWordIndex(Math.max(0, newWordSets.length - 1));
+    if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
+      deleteWord(currentWordIndex);
+      if (currentWordIndex === wordSets.length - 1) {
+        setCurrentWordIndex(Math.max(0, currentWordIndex - 1));
       }
     }
   };
 
   const handleDeleteAll = () => {
     if (window.confirm(t('Are you sure you want to delete all words?'))) {
-      stopDictation(); // Stop any ongoing playback
-      setWordSets([]);
+      deleteAllWords();
       setCurrentWordIndex(0);
+      setIsPlaying(false);
     }
   };
 
@@ -71,6 +64,11 @@ const DictationPlayer: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Helper function to get word text
+  const getWordText = (word: string | { text: string }) => {
+    return typeof word === 'string' ? word : word.text;
   };
 
   return (
@@ -133,7 +131,7 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDelete}
             disabled={wordSets.length === 0}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-300"
           >
             {t('Delete')}
           </button>
@@ -141,7 +139,7 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDeleteAll}
             disabled={wordSets.length === 0}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-300"
           >
             {t('Delete All')}
           </button>
