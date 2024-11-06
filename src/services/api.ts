@@ -151,12 +151,11 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     });
 
     const base64Image = await convertToBase64(resizedImageFile);
-    const base64Data = base64Image.split(',')[1];
-
     const params = new URLSearchParams();
-    params.append('apikey', import.meta.env.VITE_OCR_API_KEY);
+    params.append('apikey', OCR_API_KEY);
     params.append('language', 'eng');
-    params.append('base64Image', base64Data);
+    params.append('base64Image', base64Image);
+    params.append('filetype', 'jpg');
     params.append('isOverlayRequired', 'false');
     params.append('OCREngine', '2');
     params.append('scale', 'true');
@@ -245,3 +244,5 @@ export const processImage = async (formData: FormData, language: string) => {
 
   return response.text();
 };
+
+export { transcribeAudio, performOCR, OCRError, TranscriptionError };
