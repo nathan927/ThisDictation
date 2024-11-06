@@ -17,7 +17,7 @@ const ImportTxtButton: React.FC = () => {
           .filter(word => word.length > 0)
           .map(text => ({ text }));
         
-        setWordSets(importedWords);
+        setWordSets(prevWords => [...prevWords, ...importedWords]);
         event.target.value = '';
       } catch (error) {
         console.error('Error importing file:', error);
