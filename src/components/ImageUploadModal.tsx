@@ -58,6 +58,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     if (file) await processImage(file);
   };
 
+  const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLanguage = e.target.value;
+    setSelectedLanguage(newLanguage);
+    if (selectedImage) await processImage(selectedImage);
+  };
+
   const handleClose = () => {
     setSelectedImage(null);
     setRecognizedText('');
@@ -84,12 +90,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all h-[90vh] flex flex-col">
-          <Dialog.Title className="text-lg font-medium flex-shrink-0">
+        <Dialog.Panel className="mx-auto max-w-md w-full rounded-lg bg-white p-6">
+          <Dialog.Title className="text-lg font-medium mb-4">
             {t('Image Upload')}
           </Dialog.Title>
 
-          <div className="flex-1 overflow-y-auto py-4 space-y-4">
+          <div className="space-y-4">
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <label className="min-w-32 text-sm font-medium text-gray-700">
@@ -97,7 +103,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                 </label>
                 <select
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  onChange={handleLanguageChange}
                   className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="eng">{t('English')}</option>
@@ -106,14 +112,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full"
-                />
-              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
             </div>
 
             {selectedImage && (
@@ -146,7 +150,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
             )}
           </div>
 
-          <div className="flex-shrink-0 pt-4 flex justify-end gap-2 border-t">
+          <div className="mt-4 flex justify-end gap-2">
             <button
               onClick={handleClose}
               className="px-4 py-2 border rounded hover:bg-gray-100"
