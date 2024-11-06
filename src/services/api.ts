@@ -150,22 +150,23 @@ export const performOCR = async (imageFile: File): Promise<string> => {
       type: 'image/jpeg'
     });
 
-    const formData = new FormData();
     const base64Image = await convertToBase64(resizedImageFile);
-    formData.append('base64Image', base64Image.split(',')[1]);
-    formData.append('apikey', import.meta.env.VITE_OCR_API_KEY);
-    formData.append('language', 'eng');
-    formData.append('isOverlayRequired', 'false');
-    formData.append('OCREngine', '2');
-    formData.append('scale', 'true');
+    const base64Data = base64Image.split(',')[1];
+
+    const params = new URLSearchParams();
+    params.append('apikey', import.meta.env.VITE_OCR_API_KEY);
+    params.append('language', 'eng');
+    params.append('base64Image', base64Data);
+    params.append('isOverlayRequired', 'false');
+    params.append('OCREngine', '2');
+    params.append('scale', 'true');
 
     const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
       headers: {
-        'apikey': import.meta.env.VITE_OCR_API_KEY,
-        'content-type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: formData
+      body: params
     });
 
     if (!response.ok) {
@@ -180,14 +181,14 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     }
 
     if (!result.ParsedResults?.[0]?.ParsedText) {
-      formData.set('language', 'chi_tra');
+      // Try Traditional Chinese if English fails
+      params.set('language', 'chi_tra');
       const chineseResponse = await fetch('https://api.ocr.space/parse/image', {
         method: 'POST',
         headers: {
-          'apikey': import.meta.env.VITE_OCR_API_KEY,
-          'content-type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: formData
+        body: params
       });
       
       const chineseResult = await chineseResponse.json();
