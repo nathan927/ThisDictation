@@ -126,7 +126,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
       const newWords = recognizedText
         .split('\n')
         .map(word => word.trim())
-        .filter(word => word.length > 0);
+        .filter(word => word.length > 0)
+        .map(text => ({ text }));
       
       setWordSets(prevWords => [...prevWords, ...newWords]);
       handleClose();
