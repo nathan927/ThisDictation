@@ -10,9 +10,17 @@ interface Word {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, deleteWord, deleteAllWords, isPlaying, setIsPlaying } = useDictation();
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const { playDictation, pauseDictation, nextWord, previousWord } = useDictationPlayback();
+  const { 
+    wordSets, 
+    deleteWord, 
+    deleteAllWords, 
+    isPlaying, 
+    setIsPlaying,
+    currentWordIndex,
+    setCurrentWordIndex 
+  } = useDictation();
+  
+  const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
@@ -102,12 +110,12 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={isPlaying ? pauseDictation : playDictation}
+            onClick={isPlaying ? stopDictation : playDictation}
             className={`px-4 py-2 rounded text-white ${
-              isPlaying ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'
+              isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
             }`}
           >
-            {isPlaying ? t('Pause') : t('Play')}
+            {isPlaying ? t('Stop') : t('Play')}
           </button>
           
           <button
