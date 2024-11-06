@@ -27,9 +27,9 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   const getDefaultLanguage = () => {
     switch (i18n.language) {
       case 'zh-TW':
-        return 'cht';
+        return 'chi_tra';
       case 'zh-CN':
-        return 'chs';
+        return 'chi_sim';
       default:
         return 'eng';
     }
@@ -122,12 +122,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white p-6 max-h-[90vh] flex flex-col">
+        <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white p-6 flex flex-col" style={{ maxHeight: '80vh' }}>
           <Dialog.Title className="text-lg font-medium mb-4">
             {t('Image Upload')}
           </Dialog.Title>
 
-          <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-4 min-h-0 mb-4">
             <div className="space-y-4">
               {/* Language selector with label */}
               <div className="flex items-center gap-4">
@@ -184,7 +184,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+          <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white">
             <button
               onClick={handleClose}
               className="px-4 py-2 border rounded hover:bg-gray-100"
