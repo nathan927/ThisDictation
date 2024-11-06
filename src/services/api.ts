@@ -151,24 +151,26 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     });
 
     const formData = new FormData();
-    formData.append('file', resizedImageFile);
-    formData.append('apikey', OCR_API_KEY);
-    formData.append('language', 'eng+chi_sim+chi_tra'); // Correct format for multiple languages
-    formData.append('detectOrientation', 'true');
+    const base64Image = await convertToBase64(resizedImageFile);
+    formData.append('base64Image', base64Image.split(',')[1]);
+    formData.append('apikey', import.meta.env.VITE_OCR_API_KEY);
+    formData.append('language', 'eng');
     formData.append('isOverlayRequired', 'false');
-    formData.append('OCREngine', '2'); // Better for Asian languages
+    formData.append('OCREngine', '2');
     formData.append('scale', 'true');
 
     const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
       headers: {
-        'apikey': OCR_API_KEY,
+        'apikey': import.meta.env.VITE_OCR_API_KEY,
+        'content-type': 'application/x-www-form-urlencoded'
       },
       body: formData
     });
 
     if (!response.ok) {
-      throw new OCRError('Failed to process image');
+      const errorData = await response.json();
+      throw new OCRError(errorData.ErrorMessage || 'Failed to process image');
     }
 
     const result = await response.json();
@@ -178,7 +180,21 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     }
 
     if (!result.ParsedResults?.[0]?.ParsedText) {
-      throw new OCRError('No text was recognized');
+      formData.set('language', 'chi_tra');
+      const chineseResponse = await fetch('https://api.ocr.space/parse/image', {
+        method: 'POST',
+        headers: {
+          'apikey': import.meta.env.VITE_OCR_API_KEY,
+          'content-type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      });
+      
+      const chineseResult = await chineseResponse.json();
+      if (!chineseResult.ParsedResults?.[0]?.ParsedText) {
+        throw new OCRError('No text was recognized');
+      }
+      return chineseResult.ParsedResults[0].ParsedText;
     }
 
     return result.ParsedResults[0].ParsedText;
@@ -189,6 +205,16 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     }
     throw new OCRError('Failed to process image');
   }
+};
+
+// Helper function to convert File to base64
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
 };
 
 export const processImage = async (formData: FormData, language: string) => {
