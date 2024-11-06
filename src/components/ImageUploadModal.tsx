@@ -140,8 +140,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                   className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="eng">{t('English')}</option>
-                  <option value="cht">{t('Traditional Chinese')}</option>
-                  <option value="chs">{t('Simplified Chinese')}</option>
+                  <option value="chi_tra">{t('Traditional Chinese')}</option>
+                  <option value="chi_sim">{t('Simplified Chinese')}</option>
                 </select>
               </div>
 

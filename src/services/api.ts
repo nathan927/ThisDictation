@@ -140,20 +140,8 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     formData.append('file', resizedImageFile);
     formData.append('apikey', OCR_API_KEY);
     
-    // Map UI language to OCR language code
-    let ocrLang = 'eng';
-    switch (language) {
-      case 'zh-TW':
-        ocrLang = 'chi_tra';
-        break;
-      case 'zh-CN':
-        ocrLang = 'chi_sim';
-        break;
-      default:
-        ocrLang = 'eng';
-    }
-    
-    formData.append('language', ocrLang);
+    // Use the language code directly since it's already in correct format
+    formData.append('language', language);
     formData.append('isOverlayRequired', 'false');
     formData.append('detectOrientation', 'true');
     formData.append('scale', 'true');
