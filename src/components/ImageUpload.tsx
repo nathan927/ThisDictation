@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { performOCR } from '../utils/ocr';
+import { performOCR } from '../services/api';
 
 const ImageUpload: React.FC<{ onUpload: (text: string) => void }> = ({ onUpload }) => {
   const { t } = useTranslation();
