@@ -1,12 +1,5 @@
 import axios from 'axios';
 
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
-
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 
@@ -130,6 +123,7 @@ const resizeImage = async (file: File, maxSizeKB: number = 1024): Promise<Blob> 
 
 export const performOCR = async (imageFile: File, language: string = 'eng'): Promise<string> => {
   try {
+    // Resize image before sending to API
     const resizedImageBlob = await resizeImage(imageFile);
     const resizedImageFile = new File([resizedImageBlob], imageFile.name, {
       type: 'image/jpeg'
@@ -138,34 +132,21 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     const formData = new FormData();
     formData.append('file', resizedImageFile);
     formData.append('apikey', OCR_API_KEY);
-    
-    // Map UI language to OCR language code
-    let ocrLang = 'eng';
-    switch (language) {
-      case 'zh-TW':
-        ocrLang = 'chi_tra';
-        break;
-      case 'zh-CN':
-        ocrLang = 'chi_sim';
-        break;
-      default:
-        ocrLang = 'eng';
-    }
-    
-    formData.append('language', ocrLang);
+    formData.append('language', language);
     formData.append('isOverlayRequired', 'false');
     formData.append('detectOrientation', 'true');
     formData.append('scale', 'true');
     formData.append('OCREngine', '2');
 
+    // Changed the API endpoint to use HTTPS
     const response = await axios.post(
-      'https://api8.ocr.space/parse/image',
+      'https://api8.ocr.space/parse/image',  // Changed from api.ocr.space to api8.ocr.space
       formData,
       {
         headers: {
           'apikey': OCR_API_KEY,
         },
-        timeout: 30000
+        timeout: 30000 // 30 seconds timeout
       }
     );
 

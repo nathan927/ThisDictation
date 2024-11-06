@@ -10,11 +10,6 @@ interface ImageUploadModalProps {
   onConfirm: (text: string) => void;
 }
 
-interface Word {
-  text: string;
-  audioUrl?: string;
-}
-
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, onConfirm }) => {
   const { t, i18n } = useTranslation();
   const { setWordSets } = useDictation();
@@ -27,9 +22,9 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   const getDefaultLanguage = () => {
     switch (i18n.language) {
       case 'zh-TW':
-        return 'chi_tra';
+        return 'cht';
       case 'zh-CN':
-        return 'chi_sim';
+        return 'chs';
       default:
         return 'eng';
     }
@@ -112,7 +107,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
         .map(word => word.trim())
         .filter(word => word.length > 0);
       
-      setWordSets(prevWords => [...prevWords, ...newWords.map(text => ({ text }))]);
+      setWordSets(prevWords => [...prevWords, ...newWords]);
       handleClose();
     }
   };
@@ -122,12 +117,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white p-6 flex flex-col" style={{ maxHeight: '80vh' }}>
+        <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white p-6">
           <Dialog.Title className="text-lg font-medium mb-4">
             {t('Image Upload')}
           </Dialog.Title>
 
-          <div className="flex-1 overflow-y-auto space-y-4 min-h-0 mb-4">
+          <div className="space-y-4">
             <div className="space-y-4">
               {/* Language selector with label */}
               <div className="flex items-center gap-4">
@@ -140,8 +135,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                   className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="eng">{t('English')}</option>
-                  <option value="chi_tra">{t('Traditional Chinese')}</option>
-                  <option value="chi_sim">{t('Simplified Chinese')}</option>
+                  <option value="cht">{t('Traditional Chinese')}</option>
+                  <option value="chs">{t('Simplified Chinese')}</option>
                 </select>
               </div>
 
@@ -158,7 +153,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
               <img
                 src={URL.createObjectURL(selectedImage)}
                 alt="Selected"
-                className="max-w-full h-auto max-h-[30vh] object-contain mx-auto"
+                className="max-w-full h-auto"
               />
             )}
 
@@ -182,22 +177,22 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                 placeholder={t('Recognized text will appear here')}
               />
             )}
-          </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white">
-            <button
-              onClick={handleClose}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              {t('Cancel')}
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={!recognizedText || isProcessing}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-            >
-              {t('Confirm')}
-            </button>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={!recognizedText || isProcessing}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+              >
+                {t('Confirm')}
+              </button>
+            </div>
           </div>
         </Dialog.Panel>
       </div>
