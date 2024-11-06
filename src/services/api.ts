@@ -139,21 +139,34 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     const formData = new FormData();
     formData.append('file', resizedImageFile);
     formData.append('apikey', OCR_API_KEY);
-    formData.append('language', language);
+    
+    // Map UI language to OCR language code
+    let ocrLang = 'eng';
+    switch (language) {
+      case 'zh-TW':
+        ocrLang = 'chi_tra';
+        break;
+      case 'zh-CN':
+        ocrLang = 'chi_sim';
+        break;
+      default:
+        ocrLang = 'eng';
+    }
+    
+    formData.append('language', ocrLang);
     formData.append('isOverlayRequired', 'false');
     formData.append('detectOrientation', 'true');
     formData.append('scale', 'true');
     formData.append('OCREngine', '2');
 
-    // Changed the API endpoint to use HTTPS
     const response = await axios.post(
-      'https://api8.ocr.space/parse/image',  // Changed from api.ocr.space to api8.ocr.space
+      'https://api8.ocr.space/parse/image',
       formData,
       {
         headers: {
           'apikey': OCR_API_KEY,
         },
-        timeout: 30000 // 30 seconds timeout
+        timeout: 30000
       }
     );
 

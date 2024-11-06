@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { performOCR } from '../services/api';
 
 const ImageUpload: React.FC<{ onUpload: (text: string) => void }> = ({ onUpload }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleFileUpload = async (file: File) => {
@@ -11,7 +11,7 @@ const ImageUpload: React.FC<{ onUpload: (text: string) => void }> = ({ onUpload 
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
       
-      const text = await performOCR(file);
+      const text = await performOCR(file, i18n.language);
       onUpload(text);
     } catch (error) {
       console.error('Error processing image:', error);
