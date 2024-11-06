@@ -153,11 +153,11 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', resizedImageFile);
     formData.append('apikey', OCR_API_KEY);
-    formData.append('language', 'chs+cht+eng'); // Chinese (Simplified + Traditional) + English
+    formData.append('language', 'eng+chi_sim+chi_tra'); // Correct format for multiple languages
     formData.append('detectOrientation', 'true');
     formData.append('isOverlayRequired', 'false');
     formData.append('OCREngine', '2'); // Better for Asian languages
-    formData.append('scale', 'true'); // Improve accuracy for small text
+    formData.append('scale', 'true');
 
     const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
