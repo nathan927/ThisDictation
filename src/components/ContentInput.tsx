@@ -38,7 +38,7 @@ const ContentInput: React.FC = () => {
           .map(word => word.trim())
           .filter(word => word.length > 0)
           .map(text => ({ text }));
-        setWordSets(words);
+        setWordSets(prevWords => [...prevWords, ...words]);
       };
       reader.readAsText(file);
     }
