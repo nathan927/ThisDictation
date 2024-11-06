@@ -143,10 +143,10 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     let ocrLang = 'eng';
     switch (language) {
       case 'zh-TW':
-        ocrLang = 'cht';
+        ocrLang = 'chi_tra';
         break;
       case 'zh-CN':
-        ocrLang = 'chs';
+        ocrLang = 'chi_sim';
         break;
       default:
         ocrLang = 'eng';
