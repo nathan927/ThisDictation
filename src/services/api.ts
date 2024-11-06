@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+// Add these type declarations at the top of the file
+interface Window {
+  SpeechRecognition: any;
+  webkitSpeechRecognition: any;
+}
+
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 
@@ -45,7 +51,8 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
     
     // Fallback to Web Speech API
     return new Promise((resolve, reject) => {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
       recognition.continuous = true;
       recognition.interimResults = false;
