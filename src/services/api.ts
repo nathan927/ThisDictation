@@ -152,14 +152,16 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     });
 
     const formData = new FormData();
-    formData.append('image', resizedImageFile);
+    formData.append('file', resizedImageFile);
+    formData.append('apikey', OCR_API_KEY);
     formData.append('detectOrientation', 'true');
-    formData.append('detectLanguage', 'true'); // Enable auto language detection
+    formData.append('detectLanguage', 'true');
+    formData.append('isOverlayRequired', 'false');
 
     const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
       headers: {
-        'apikey': process.env.VITE_OCR_API_KEY || '',
+        'apikey': OCR_API_KEY,
       },
       body: formData
     });
@@ -180,6 +182,7 @@ export const performOCR = async (imageFile: File): Promise<string> => {
 
     return result.ParsedResults[0].ParsedText;
   } catch (error) {
+    console.error('OCR Error:', error);
     if (error instanceof OCRError) {
       throw error;
     }
