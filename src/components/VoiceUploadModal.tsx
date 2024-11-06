@@ -8,7 +8,12 @@ import { useDictation } from '../context/DictationContext';
 interface VoiceUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm?: (text: string[]) => void;
+  onConfirm?: (text: string, audioUrl: string) => void;
+}
+
+interface Word {
+  text: string;
+  audioUrl?: string;
 }
 
 const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
@@ -44,16 +49,9 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
     onClose();
   };
 
-  const handleConfirm = () => {
-    if (wordSetInput.trim() && mediaBlobUrl) {
-      const newWord = {
-        text: wordSetInput.trim(),
-        audioUrl: mediaBlobUrl
-      };
-      
-      setWordSets(prevWords => [...prevWords, newWord]);
-      handleClose();
-    }
+  const handleConfirm = (text: string, audioUrl: string) => {
+    setWordSets(prevWords => [...prevWords, { text, audioUrl }]);
+    handleClose();
   };
 
   return (
@@ -94,7 +92,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
               </button>
               {wordSetInput.trim() && (
                 <button
-                  onClick={handleConfirm}
+                  onClick={() => handleConfirm(wordSetInput.trim(), mediaBlobUrl)}
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
                   {t('Confirm')}

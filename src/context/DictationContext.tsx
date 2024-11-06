@@ -8,12 +8,17 @@ interface DictationSettings {
   pronunciation: string;
 }
 
+interface Word {
+  text: string;
+  audioUrl?: string;
+}
+
 interface DictationContextType {
-  wordSets: string[];
+  wordSets: Word[];
   currentWordIndex: number;
   isPlaying: boolean;
   settings: DictationSettings;
-  setWordSets: React.Dispatch<React.SetStateAction<string[]>>;
+  setWordSets: React.Dispatch<React.SetStateAction<Word[]>>;
   deleteWord: (index: number) => void;
   deleteAllWords: () => void;
   setCurrentWordIndex: (index: number) => void;
@@ -41,7 +46,7 @@ export const DictationContext = createContext<DictationContextType>({
 
 export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
-  const [wordSets, setWordSets] = useState<string[]>([]);
+  const [wordSets, setWordSets] = useState<Word[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
