@@ -73,7 +73,7 @@ const CameraUpload: React.FC<CameraUploadProps> = ({ onCapture }) => {
     <div className="mt-4">
       <video 
         ref={videoRef} 
-        className="w-full h-auto max-w-md mx-auto mb-4" 
+        className="w-full h-auto max-w-md mx-auto mb-4 rounded-lg" 
         style={{ 
           display: isStreaming ? 'block' : 'none',
           transform: 'scaleX(-1)'  // Mirror the preview
