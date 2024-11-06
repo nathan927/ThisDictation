@@ -130,7 +130,6 @@ const resizeImage = async (file: File, maxSizeKB: number = 1024): Promise<Blob> 
 
 export const performOCR = async (imageFile: File, language: string = 'eng'): Promise<string> => {
   try {
-    // Resize image before sending to API
     const resizedImageBlob = await resizeImage(imageFile);
     const resizedImageFile = new File([resizedImageBlob], imageFile.name, {
       type: 'image/jpeg'
@@ -144,10 +143,10 @@ export const performOCR = async (imageFile: File, language: string = 'eng'): Pro
     let ocrLang = 'eng';
     switch (language) {
       case 'zh-TW':
-        ocrLang = 'chi_tra';
+        ocrLang = 'cht';
         break;
       case 'zh-CN':
-        ocrLang = 'chi_sim';
+        ocrLang = 'chs';
         break;
       default:
         ocrLang = 'eng';
