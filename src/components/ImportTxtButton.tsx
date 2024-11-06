@@ -14,12 +14,10 @@ const ImportTxtButton: React.FC = () => {
         const importedWords = text
           .split('\n')
           .map(word => word.trim())
-          .filter(word => word.length > 0);
+          .filter(word => word.length > 0)
+          .map(text => ({ text }));
         
-        // The context will handle appending these words
         setWordSets(importedWords);
-
-        // Clear input
         event.target.value = '';
       } catch (error) {
         console.error('Error importing file:', error);

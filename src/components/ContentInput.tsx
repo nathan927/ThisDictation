@@ -19,7 +19,8 @@ const ContentInput: React.FC = () => {
       const newWords = textAreaRef.current.value
         .split('\n')
         .map(word => word.trim())
-        .filter(word => word.length > 0);
+        .filter(word => word.length > 0)
+        .map(text => ({ text }));
       setWordSets(prevWords => [...prevWords, ...newWords]);
       if (textAreaRef.current) {
         textAreaRef.current.value = '';
@@ -35,7 +36,8 @@ const ContentInput: React.FC = () => {
         const text = e.target?.result as string;
         const words = text.split('\n')
           .map(word => word.trim())
-          .filter(word => word.length > 0);
+          .filter(word => word.length > 0)
+          .map(text => ({ text }));
         setWordSets(words);
       };
       reader.readAsText(file);
