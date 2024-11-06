@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 

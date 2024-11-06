@@ -10,6 +10,11 @@ interface ImageUploadModalProps {
   onConfirm: (text: string) => void;
 }
 
+interface Word {
+  text: string;
+  audioUrl?: string;
+}
+
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, onConfirm }) => {
   const { t, i18n } = useTranslation();
   const { setWordSets } = useDictation();
@@ -107,7 +112,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
         .map(word => word.trim())
         .filter(word => word.length > 0);
       
-      setWordSets(prevWords => [...prevWords, ...newWords]);
+      setWordSets(prevWords => [...prevWords, ...newWords.map(text => ({ text }))]);
       handleClose();
     }
   };
