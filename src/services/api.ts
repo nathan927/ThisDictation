@@ -145,7 +145,6 @@ const resizeImage = async (file: File, maxSizeKB: number = 1024): Promise<Blob> 
 
 export const performOCR = async (imageFile: File): Promise<string> => {
   try {
-    // Resize image before sending to API
     const resizedImageBlob = await resizeImage(imageFile);
     const resizedImageFile = new File([resizedImageBlob], imageFile.name, {
       type: 'image/jpeg'
@@ -154,9 +153,10 @@ export const performOCR = async (imageFile: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', resizedImageFile);
     formData.append('apikey', OCR_API_KEY);
+    formData.append('language', 'eng+chi_tra+chi_sim'); // Support all three languages
     formData.append('detectOrientation', 'true');
-    formData.append('detectLanguage', 'true');
     formData.append('isOverlayRequired', 'false');
+    formData.append('OCREngine', '2'); // Better for Asian languages
 
     const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
