@@ -60,8 +60,9 @@ const DictationPlayer: React.FC = () => {
   };
 
   const handleExport = () => {
+    const BOM = '\uFEFF';  // Add BOM for UTF-8
     const text = wordSets.map(word => getWordText(word)).join('\n');
-    const blob = new Blob([text], { type: 'text/plain' });
+    const blob = new Blob([BOM + text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
