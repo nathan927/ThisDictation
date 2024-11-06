@@ -244,5 +244,3 @@ export const processImage = async (formData: FormData, language: string) => {
 
   return response.text();
 };
-
-export { transcribeAudio, performOCR, OCRError, TranscriptionError };
