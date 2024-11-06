@@ -17,7 +17,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   const [recognizedText, setRecognizedText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const getDefaultLanguage = () => {
     switch (i18n.language) {
@@ -38,9 +37,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     setRecognizedText('');
     setIsProcessing(true);
     setSelectedImage(file);
-
-    const preview = URL.createObjectURL(file);
-    setPreviewUrl(preview);
 
     try {
       const text = await performOCR(file, selectedLanguage);
@@ -83,14 +79,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -102,15 +90,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
           </Dialog.Title>
 
           <div className="flex-1 overflow-y-auto py-4 space-y-4">
-            {previewUrl && (
-              <div className="relative w-full aspect-video">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <label className="min-w-32 text-sm font-medium text-gray-700">
@@ -141,7 +120,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
               <img
                 src={URL.createObjectURL(selectedImage)}
                 alt="Selected"
-                className="max-w-full h-auto"
+                className="max-w-full h-auto rounded-lg"
               />
             )}
 
