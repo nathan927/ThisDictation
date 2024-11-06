@@ -106,7 +106,11 @@ const ContentInput: React.FC = () => {
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
         onConfirm={(text) => {
-          const words = text.split('\n').filter(word => word.trim());
+          const words = text
+            .split('\n')
+            .map(word => word.trim())
+            .filter(word => word.length > 0)
+            .map(text => ({ text }));
           setWordSets(words);
           setIsImageModalOpen(false);
         }}
