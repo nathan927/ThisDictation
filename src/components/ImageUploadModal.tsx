@@ -21,6 +21,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
   const streamRef = useRef<MediaStream | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   
   const getDefaultLanguage = () => {
     switch (i18n.language) {
