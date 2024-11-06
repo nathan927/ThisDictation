@@ -1,29 +1,7 @@
 import axios from 'axios';
 
-// Add type definition for import.meta.env
-interface ImportMetaEnv {
-  VITE_API_URL: string;
-  // Add other env variables as needed
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
-// Fix SpeechRecognition type
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
-
-const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY || '';
-const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY || '';
-
-if (!DEEPGRAM_API_KEY || !OCR_API_KEY) {
-  console.warn('API keys not found in production environment');
-}
+const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
+const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 
 export class TranscriptionError extends Error {
   constructor(message: string) {
@@ -143,78 +121,57 @@ const resizeImage = async (file: File, maxSizeKB: number = 1024): Promise<Blob> 
   });
 };
 
-export const performOCR = async (imageFile: File): Promise<string> => {
+export const performOCR = async (imageFile: File, language: string = 'eng'): Promise<string> => {
   try {
+    // Resize image before sending to API
     const resizedImageBlob = await resizeImage(imageFile);
     const resizedImageFile = new File([resizedImageBlob], imageFile.name, {
       type: 'image/jpeg'
     });
 
-    const base64Image = await convertToBase64(resizedImageFile);
-    const params = new URLSearchParams();
-    params.append('apikey', OCR_API_KEY);
-    params.append('language', 'eng');
-    params.append('base64Image', base64Image);
-    params.append('filetype', 'jpg');
-    params.append('isOverlayRequired', 'false');
-    params.append('OCREngine', '2');
-    params.append('scale', 'true');
+    const formData = new FormData();
+    formData.append('file', resizedImageFile);
+    formData.append('apikey', OCR_API_KEY);
+    formData.append('language', language);
+    formData.append('isOverlayRequired', 'false');
+    formData.append('detectOrientation', 'true');
+    formData.append('scale', 'true');
+    formData.append('OCREngine', '2');
 
-    const response = await fetch('https://api.ocr.space/parse/image', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new OCRError(errorData.ErrorMessage || 'Failed to process image');
-    }
-
-    const result = await response.json();
-    
-    if (result.IsErroredOnProcessing) {
-      throw new OCRError(result.ErrorMessage || 'Failed to process image');
-    }
-
-    if (!result.ParsedResults?.[0]?.ParsedText) {
-      // Try Traditional Chinese if English fails
-      params.set('language', 'chi_tra');
-      const chineseResponse = await fetch('https://api.ocr.space/parse/image', {
-        method: 'POST',
+    // Changed the API endpoint to use HTTPS
+    const response = await axios.post(
+      'https://api8.ocr.space/parse/image',  // Changed from api.ocr.space to api8.ocr.space
+      formData,
+      {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'apikey': OCR_API_KEY,
         },
-        body: params
-      });
-      
-      const chineseResult = await chineseResponse.json();
-      if (!chineseResult.ParsedResults?.[0]?.ParsedText) {
-        throw new OCRError('No text was recognized');
+        timeout: 30000 // 30 seconds timeout
       }
-      return chineseResult.ParsedResults[0].ParsedText;
+    );
+
+    if (!response.data) {
+      throw new OCRError('No response from OCR service');
     }
 
-    return result.ParsedResults[0].ParsedText;
+    if (response.data.ErrorMessage) {
+      throw new OCRError(response.data.ErrorMessage);
+    }
+
+    if (!response.data.ParsedResults?.[0]?.ParsedText) {
+      throw new OCRError('No text found in image');
+    }
+
+    return response.data.ParsedResults[0].ParsedText.trim();
   } catch (error) {
-    console.error('OCR Error:', error);
-    if (error instanceof OCRError) {
-      throw error;
+    if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        throw new OCRError('Request timed out. Please try again.');
+      }
+      throw new OCRError(`OCR API Error: ${error.message}`);
     }
     throw new OCRError('Failed to process image');
   }
-};
-
-// Helper function to convert File to base64
-const convertToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
 };
 
 export const processImage = async (formData: FormData, language: string) => {
