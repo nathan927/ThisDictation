@@ -118,7 +118,11 @@ const resources = {
       'Dictation Player': '默書播放器',
       'Open Camera': '開啟相機',
       'Take Photo': '拍照',
-      'or': '或'
+      'or': '或',
+      'Failed to process image': '圖片處理失敗，請重試',
+      'No text found in image': '圖片中未找到文字',
+      'No response from OCR service': 'OCR服務無回應',
+      'Request timed out': '請求超時，請重試'
     }
   },
   'zh-CN': {
@@ -181,7 +185,11 @@ const resources = {
       'Dictation Player': '默书播放器',
       'Open Camera': '打开相机',
       'Take Photo': '拍照',
-      'or': '或'
+      'or': '或',
+      'Failed to process image': '图片处理失败，请重试',
+      'No text found in image': '图片中未找到文字',
+      'No response from OCR service': 'OCR服务无响应',
+      'Request timed out': '请求超时，请重试'
     }
   }
 };
