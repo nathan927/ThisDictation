@@ -19,6 +19,13 @@ export const useDictationPlayback = () => {
   const [repetitionCount, setRepetitionCount] = useState(1);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speechSynthesis = window.speechSynthesis;
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    // Force load voices
+    speechSynthesis.getVoices();
+  }, []);
 
   const playAudio = (audioUrl: string): Promise<void> => {
     return new Promise((resolve) => {
