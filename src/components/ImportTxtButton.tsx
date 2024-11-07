@@ -4,11 +4,18 @@ import { useDictation } from '../context/DictationContext';
 
 const ImportTxtButton: React.FC = () => {
   const { t } = useTranslation();
-  const { wordSets, setWordSets } = useDictation();
+  const { setWordSets } = useDictation();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check if the file is a .txt file
+      if (file.type !== 'text/plain') {
+        alert(t('Please upload TXT file'));
+        event.target.value = ''; // Reset the input
+        return;
+      }
+
       try {
         const text = await file.text();
         const importedWords = text
@@ -18,7 +25,7 @@ const ImportTxtButton: React.FC = () => {
           .map(text => ({ text }));
         
         setWordSets(prevWords => [...prevWords, ...importedWords]);
-        event.target.value = '';
+        event.target.value = ''; // Reset the input
       } catch (error) {
         console.error('Error importing file:', error);
       }
