@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
 import { speak } from '../services/api';
-import { useSettings } from '../context/SettingsContext';
 
 interface Word {
   text: string;
@@ -19,11 +18,12 @@ const DictationPlayer: React.FC = () => {
     isPlaying, 
     setIsPlaying,
     currentWordIndex,
-    setCurrentWordIndex 
+    setCurrentWordIndex,
+    settings 
   } = useDictation();
   
   const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
-  const { interval } = useSettings();
+  const { interval } = settings;
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
