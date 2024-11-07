@@ -113,81 +113,52 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     }
   };
 
-  const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '90%', // Changed from fixed width to percentage
-    maxWidth: '500px', // Add maximum width for larger screens
-    maxHeight: '90vh', // Maximum height relative to viewport
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    overflow: 'auto', // Add scrolling if content is too long
-  };
-
-  // Update the buttons container style
-  const buttonContainerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    mt: 2,
-    gap: 2,
-    position: 'sticky', // Make buttons stick to bottom
-    bottom: 0,
-    backgroundColor: 'background.paper',
-    pt: 2,
-  };
-
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-md w-full rounded bg-white p-6">
-          <Dialog.Title className="text-lg font-medium mb-4">
+        <Dialog.Panel className="mx-auto w-full max-w-md rounded bg-white p-4 max-h-[90vh] overflow-y-auto">
+          <Dialog.Title className="text-lg font-medium mb-4 sticky top-0 bg-white pb-2 border-b">
             {t('Image Upload')}
           </Dialog.Title>
 
-          <div className="space-y-4">
-            <div className="space-y-4">
-              {/* Language selector with label */}
-              <div className="flex items-center gap-4">
-                <label className="min-w-32 text-sm font-medium text-gray-700">
-                  {t('Document Language')}:
-                </label>
-                <select
-                  value={selectedLanguage}
-                  onChange={handleLanguageChange}
-                  className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="eng">{t('English')}</option>
-                  <option value="cht">{t('Traditional Chinese')}</option>
-                  <option value="chs">{t('Simplified Chinese')}</option>
-                </select>
-              </div>
-
-              {/* File input */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full"
-              />
+          <div className="space-y-4 mb-16">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 min-w-[120px]">
+                {t('Document Language')}:
+              </label>
+              <select
+                value={selectedLanguage}
+                onChange={handleLanguageChange}
+                className="flex-1 p-2 border rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="eng">{t('English')}</option>
+                <option value="cht">{t('Traditional Chinese')}</option>
+                <option value="chs">{t('Simplified Chinese')}</option>
+              </select>
             </div>
 
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full"
+            />
+
             {selectedImage && (
-              <img
-                src={URL.createObjectURL(selectedImage)}
-                alt="Selected"
-                className="max-w-full h-auto"
-              />
+              <div className="max-h-[40vh] overflow-y-auto">
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="Selected"
+                  className="max-w-full h-auto"
+                />
+              </div>
             )}
 
             {isProcessing && (
               <div className="text-center text-gray-600">
-                {t('Processing image...')}
+                {t('Processing...')}
               </div>
             )}
 
@@ -202,11 +173,13 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
                 value={recognizedText}
                 onChange={(e) => setRecognizedText(e.target.value)}
                 className="w-full h-32 p-2 border rounded resize-none"
-                placeholder={t('Recognized text will appear here')}
+                placeholder={t('Recognized text will appear here...')}
               />
             )}
+          </div>
 
-            <div className="flex justify-end gap-2">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+            <div className="flex justify-end gap-2 max-w-md mx-auto">
               <button
                 onClick={handleClose}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
