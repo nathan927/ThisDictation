@@ -71,17 +71,25 @@ export const useDictationPlayback = () => {
     const currentWord = wordSets[currentWordIndex];
     if (!currentWord) return;
 
-    for (let i = 0; i < settings.repetitions; i++) {
-      if (!isPlaying) break;
-      await speakWord(currentWord);
-      if (i < settings.repetitions - 1) {
-        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+    try {
+      for (let i = 0; i < settings.repetitions; i++) {
+        if (!isPlaying) return; // Exit immediately if stopped
+        await speakWord(currentWord);
+        if (i < settings.repetitions - 1 && isPlaying) {
+          await new Promise(resolve => {
+            timeoutRef.current = setTimeout(resolve, settings.interval * 1000);
+          });
+        }
       }
-    }
 
-    if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      setCurrentWordIndex(currentWordIndex + 1);
-    } else if (currentWordIndex === wordSets.length - 1) {
+      // Only proceed to next word if still playing
+      if (isPlaying && currentWordIndex < wordSets.length - 1) {
+        setCurrentWordIndex(currentWordIndex + 1);
+      } else if (currentWordIndex === wordSets.length - 1) {
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('Error in playCurrentWord:', error);
       setIsPlaying(false);
     }
   };
@@ -104,14 +112,18 @@ export const useDictationPlayback = () => {
   };
 
   const stopDictation = () => {
+    setIsPlaying(false); // Set this first to prevent any new playback
+    
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
+    
     window.speechSynthesis.cancel();
-    setIsPlaying(false);
+    
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   };
 
