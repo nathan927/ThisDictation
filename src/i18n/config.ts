@@ -63,7 +63,8 @@ const resources = {
       'Upload Image': 'Upload Image',
       'Processing...': 'Processing...',
       'Recognized text will appear here...': 'Recognized text will appear here...',
-      'Please provide the words': 'Please provide the words'
+      'Please provide the words': 'Please provide the words',
+      'Please click "Play" twice in the first time.': 'Please click "Play" twice in the first time.'
     }
   },
   'zh-TW': {
@@ -97,7 +98,7 @@ const resources = {
       'Are you sure you want to delete all words?': '確定要刪除所有內容嗎？',
       'There is no word to be added.': '沒有要添加的詞組。',
       'Word Progress': '單字進度',
-      'Current Repetition': '當前��複次數',
+      'Current Repetition': '當前複次數',
       'No words added': '尚未添加詞組',
       'of': '/',
       'word(s)': '個詞組',
@@ -130,7 +131,8 @@ const resources = {
       'No text found in image': '圖片中未找到文字',
       'No response from OCR service': 'OCR服務無回應',
       'Request timed out': '請求超時，請重試',
-      'Please provide the words': '請提供詞組'
+      'Please provide the words': '請提供詞組',
+      'Please click "Play" twice in the first time.': '第一次使用時請按兩次「播放」。'
     }
   },
   'zh-CN': {
@@ -198,7 +200,8 @@ const resources = {
       'No text found in image': '图片中未找到文字',
       'No response from OCR service': 'OCR服务无响应',
       'Request timed out': '请求超时，请重试',
-      'Please provide the words': '请提供词组'
+      'Please provide the words': '请提供词组',
+      'Please click "Play" twice in the first time.': '第一次使用时请按两次「播放」。'
     }
   }
 };
