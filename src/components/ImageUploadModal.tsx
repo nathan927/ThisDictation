@@ -139,13 +139,36 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
               </select>
             </div>
 
+            {/* Camera capture input */}
             <input
               type="file"
               accept="image/*"
               capture="environment"
               onChange={handleImageChange}
-              className="w-full"
+              className="hidden"
+              id="cameraInput"
             />
+            <label
+              htmlFor="cameraInput"
+              className="block w-full px-4 py-2 text-center bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600"
+            >
+              {t('Take Photo')}
+            </label>
+
+            {/* File selection input */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              id="fileInput"
+            />
+            <label
+              htmlFor="fileInput"
+              className="block w-full px-4 py-2 text-center bg-gray-500 text-white rounded cursor-pointer hover:bg-gray-600"
+            >
+              {t('Select a file')}
+            </label>
 
             {selectedImage && (
               <div className="max-h-[40vh] overflow-y-auto">

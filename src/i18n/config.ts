@@ -64,7 +64,9 @@ const resources = {
       'Processing...': 'Processing...',
       'Recognized text will appear here...': 'Recognized text will appear here...',
       'Please provide the words': 'Please provide the words',
-      'Please click "Play" twice in the first time.': 'Please click "Play" twice in the first time.'
+      'Please click "Play" twice in the first time.': 'Please click "Play" twice in the first time.',
+      'Take Photo': 'Take Photo',
+      'Select a file': 'Select a file'
     }
   },
   'zh-TW': {
@@ -125,14 +127,16 @@ const resources = {
       'Simplified Chinese': '簡體中文',
       'Dictation Player': '默書播放器',
       'Open Camera': '開啟相機',
-      'Take Photo': '拍照',
+      'Take Photo': '拍照片',
       'or': '或',
       'Failed to process image': '圖片處理失敗，請重試',
       'No text found in image': '圖片中未找到文字',
       'No response from OCR service': 'OCR服務無回應',
       'Request timed out': '請求超時，請重試',
       'Please provide the words': '請提供詞組',
-      'Please click "Play" twice in the first time.': '第一次使用時請按兩次「播放」。'
+      'Please click "Play" twice in the first time.': '第一次使用時請按兩次「播放」。',
+      'Take Photo': '拍照片',
+      'Select a file': '選擇檔案'
     }
   },
   'zh-CN': {
@@ -194,14 +198,16 @@ const resources = {
       'Simplified Chinese': '简体中文',
       'Dictation Player': '默书播放器',
       'Open Camera': '打开相机',
-      'Take Photo': '拍照',
+      'Take Photo': '拍照片',
       'or': '或',
       'Failed to process image': '图片处理失败，请重试',
       'No text found in image': '图片中未找到文字',
       'No response from OCR service': 'OCR服务无响应',
       'Request timed out': '请求超时，请重试',
       'Please provide the words': '请提供词组',
-      'Please click "Play" twice in the first time.': '第一次使用时请按两次「播放」。'
+      'Please click "Play" twice in the first time.': '第一次使用时请按两次「播放」。',
+      'Take Photo': '拍照片',
+      'Select a file': '选择文件'
     }
   }
 };
