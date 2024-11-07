@@ -113,6 +113,33 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
     }
   };
 
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%', // Changed from fixed width to percentage
+    maxWidth: '500px', // Add maximum width for larger screens
+    maxHeight: '90vh', // Maximum height relative to viewport
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    overflow: 'auto', // Add scrolling if content is too long
+  };
+
+  // Update the buttons container style
+  const buttonContainerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    mt: 2,
+    gap: 2,
+    position: 'sticky', // Make buttons stick to bottom
+    bottom: 0,
+    backgroundColor: 'background.paper',
+    pt: 2,
+  };
+
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />

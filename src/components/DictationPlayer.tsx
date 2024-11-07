@@ -79,6 +79,41 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
+  const playWord = async (index: number) => {
+    if (index >= wordSets.length) {
+      setIsPlaying(false);
+      return;
+    }
+
+    try {
+      setCurrentWordIndex(index);
+      await speak(wordSets[index].text);
+      
+      // Add a small delay between words
+      setTimeout(() => {
+        // Continue with next word if still playing
+        if (isPlaying) {
+          playWord(index + 1);
+        }
+      }, 1000); // 1 second delay between words
+    } catch (error) {
+      console.error('Error playing word:', error);
+      setIsPlaying(false);
+    }
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+    // Start from current word index or restart if at end
+    const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
+    playWord(startIndex);
+  };
+
+  const handleStop = () => {
+    setIsPlaying(false);
+    setCurrentWordIndex(0);
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-4">{t('Dictation Player')}</h2>
@@ -110,7 +145,7 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={isPlaying ? stopDictation : playDictation}
+            onClick={isPlaying ? handleStop : handlePlay}
             className={`px-4 py-2 rounded text-white ${
               isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
             }`}
