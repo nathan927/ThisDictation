@@ -73,7 +73,7 @@ const resources = {
       'Content Input': '內容輸入',
       'Enter words (one per line)': '輸入單字或詞組（每行當作一個詞組）',
       'Text Upload': '文字上傳',
-      'Voice Upload': '音上傳',
+      'Voice Upload': '錄音上傳',
       'Image Upload': '圖片上傳',
       'Dictation Settings': '默書設定',
       'Reading Speed': '朗讀速度',
