@@ -16,8 +16,6 @@ export const useDictationPlayback = () => {
     settings 
   } = useDictation();
 
-  const [repetitionCount, setRepetitionCount] = useState(1);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const playAudio = (audioUrl: string): Promise<void> => {
@@ -34,19 +32,16 @@ export const useDictationPlayback = () => {
   };
 
   const speakWord = async (word: string | WordWithAudio) => {
-    // Stop any ongoing audio or speech
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
     window.speechSynthesis.cancel();
 
-    // Check if word is a voice recording
     if (typeof word === 'object' && 'audioUrl' in word) {
       return playAudio(word.audioUrl);
     }
 
-    // For non-voice recording words, use text-to-speech
     const text = typeof word === 'string' ? word : word.text;
     const utterance = new SpeechSynthesisUtterance(text);
     
@@ -84,9 +79,7 @@ export const useDictationPlayback = () => {
     }
 
     if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      timeoutRef.current = setTimeout(() => {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }, settings.interval * 1000);
+      setCurrentWordIndex(currentWordIndex + 1);
     } else if (currentWordIndex === wordSets.length - 1) {
       setIsPlaying(false);
     }
@@ -97,9 +90,11 @@ export const useDictationPlayback = () => {
       playCurrentWord();
     }
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
+      window.speechSynthesis.cancel();
     };
   }, [currentWordIndex, isPlaying]);
 
@@ -116,9 +111,6 @@ export const useDictationPlayback = () => {
     }
     window.speechSynthesis.cancel();
     setIsPlaying(false);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
   };
 
   const nextWord = () => {
@@ -128,10 +120,6 @@ export const useDictationPlayback = () => {
         audioRef.current = null;
       }
       window.speechSynthesis.cancel();
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
       setCurrentWordIndex(currentWordIndex + 1);
     }
   };
@@ -143,33 +131,14 @@ export const useDictationPlayback = () => {
         audioRef.current = null;
       }
       window.speechSynthesis.cancel();
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
       setCurrentWordIndex(currentWordIndex - 1);
     }
   };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      window.speechSynthesis.cancel();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   return {
     playDictation,
     stopDictation,
     nextWord,
-    previousWord,
-    repetitionCount
+    previousWord
   };
 };
