@@ -1,9 +1,7 @@
-import { useRef } from 'react';
 import { useDictation } from '../context/DictationContext';
 
 export const useDictationPlayback = () => {
   const { wordSets, isPlaying, setIsPlaying, currentWordIndex, setCurrentWordIndex } = useDictation();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const playDictation = () => {
     if (!isPlaying) {
@@ -15,10 +13,10 @@ export const useDictationPlayback = () => {
   const playFromIndex = (index: number) => {
     if (index < wordSets.length) {
       const word = wordSets[index];
-      audioRef.current = new Audio(word.audioUrl);
-      audioRef.current.play();
+      const audio = new Audio(word.audioUrl);
+      audio.play();
 
-      audioRef.current.onended = () => {
+      audio.onended = () => {
         setCurrentWordIndex(index + 1);
         playFromIndex(index + 1);
       };
@@ -30,11 +28,19 @@ export const useDictationPlayback = () => {
   const stopDictation = () => {
     setIsPlaying(false);
     setCurrentWordIndex(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+  };
+
+  const nextWord = () => {
+    if (currentWordIndex < wordSets.length - 1) {
+      setCurrentWordIndex(currentWordIndex + 1);
     }
   };
 
-  return { playDictation, stopDictation };
+  const previousWord = () => {
+    if (currentWordIndex > 0) {
+      setCurrentWordIndex(currentWordIndex - 1);
+    }
+  };
+
+  return { playDictation, stopDictation, nextWord, previousWord };
 };
