@@ -26,6 +26,7 @@
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "@types/dom-speech-recognition": "^0.0.4",
     "@types/node": "^22.8.6",
     "@types/react": "latest",
     "@types/react-dom": "latest",
