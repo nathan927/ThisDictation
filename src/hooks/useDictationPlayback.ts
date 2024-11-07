@@ -16,7 +16,6 @@ export const useDictationPlayback = () => {
     settings 
   } = useDictation();
 
-  const [repetitionCount, setRepetitionCount] = useState(1);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -34,19 +33,16 @@ export const useDictationPlayback = () => {
   };
 
   const speakWord = async (word: string | WordWithAudio) => {
-    // Stop any ongoing audio or speech
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
     window.speechSynthesis.cancel();
 
-    // Check if word is a voice recording
     if (typeof word === 'object' && 'audioUrl' in word) {
       return playAudio(word.audioUrl);
     }
 
-    // For non-voice recording words, use text-to-speech
     const text = typeof word === 'string' ? word : word.text;
     const utterance = new SpeechSynthesisUtterance(text);
     
@@ -84,9 +80,7 @@ export const useDictationPlayback = () => {
     }
 
     if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      timeoutRef.current = setTimeout(() => {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }, settings.interval * 1000);
+      setCurrentWordIndex(currentWordIndex + 1);
     } else if (currentWordIndex === wordSets.length - 1) {
       setIsPlaying(false);
     }
@@ -151,7 +145,6 @@ export const useDictationPlayback = () => {
     }
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -169,7 +162,6 @@ export const useDictationPlayback = () => {
     playDictation,
     stopDictation,
     nextWord,
-    previousWord,
-    repetitionCount
+    previousWord
   };
 };
