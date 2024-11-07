@@ -6,6 +6,13 @@ interface Window {
   webkitSpeechRecognition: any;
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const OCR_API_KEY = import.meta.env.VITE_OCR_API_KEY;
 
@@ -51,8 +58,9 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
     
     // Fallback to Web Speech API
     return new Promise((resolve, reject) => {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+      const SpeechRecognitionAPI: new () => SpeechRecognition = 
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognitionAPI();
       recognition.lang = 'en-US';
       recognition.continuous = true;
       recognition.interimResults = false;
