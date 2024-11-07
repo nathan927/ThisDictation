@@ -95,6 +95,16 @@ export const useDictationPlayback = () => {
   useEffect(() => {
     if (isPlaying) {
       playCurrentWord();
+    } else {
+      // Cancel any ongoing speech when stopping
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      window.speechSynthesis.cancel();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     }
     return () => {
       if (timeoutRef.current) {
@@ -106,7 +116,6 @@ export const useDictationPlayback = () => {
   const playDictation = () => {
     if (wordSets.length === 0) return;
     setIsPlaying(true);
-    playCurrentWord();
   };
 
   const stopDictation = () => {
@@ -116,6 +125,7 @@ export const useDictationPlayback = () => {
     }
     window.speechSynthesis.cancel();
     setIsPlaying(false);
+    setCurrentWordIndex(0); // Reset to first word
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
