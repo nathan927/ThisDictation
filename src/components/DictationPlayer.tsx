@@ -18,13 +18,10 @@ const DictationPlayer: React.FC = () => {
     isPlaying, 
     setIsPlaying,
     currentWordIndex,
-    setCurrentWordIndex,
-    settings
+    setCurrentWordIndex 
   } = useDictation();
   
   const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
-
-  const [isFirstPlay, setIsFirstPlay] = useState(true);
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
@@ -83,34 +80,34 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
-  const handlePlayClick = () => {
-    if (isFirstPlay) {
-      setIsFirstPlay(false);
-      // Simulate two quick clicks for the first play
-      handlePlayLogic();
-      setTimeout(handlePlayLogic, 100);
-    } else {
-      handlePlayLogic();
+  const playWord = async (index: number) => {
+    if (index >= wordSets.length) {
+      setIsPlaying(false);
+      return;
+    }
+
+    try {
+      setCurrentWordIndex(index);
+      await speak(wordSets[index].text);
+      
+      // Add a small delay between words
+      setTimeout(() => {
+        // Continue with next word if still playing
+        if (isPlaying) {
+          playWord(index + 1);
+        }
+      }, 1000); // 1 second delay between words
+    } catch (error) {
+      console.error('Error playing word:', error);
+      setIsPlaying(false);
     }
   };
 
-  const handlePlayLogic = () => {
-    if (isPlaying) {
-      stopSpeaking();
-    } else if (wordSets[currentWordIndex]) {
-      const language = settings.pronunciation === 'Cantonese' ? 'zh-HK' : 'en-US';
-      
-      speakText(
-        wordSets[currentWordIndex].text,
-        language,
-        settings.repetitions,
-        () => {
-          if (currentWordIndex < wordSets.length - 1) {
-            setCurrentWordIndex(currentWordIndex + 1);
-          }
-        }
-      );
-    }
+  const handlePlay = () => {
+    setIsPlaying(true);
+    // Start from current word index or restart if at end
+    const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
+    playWord(startIndex);
   };
 
   const handleStop = () => {
@@ -149,7 +146,7 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={handlePlayClick}
+            onClick={isPlaying ? handleStop : handlePlay}
             className={`px-4 py-2 rounded text-white ${
               isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
             }`}
