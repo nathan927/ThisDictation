@@ -215,3 +215,13 @@ export const processImage = async (formData: FormData, language: string) => {
 
   return response.text();
 };
+
+// Add the speak function export
+export const speak = async (text: string): Promise<void> => {
+  const utterance = new SpeechSynthesisUtterance(text);
+  return new Promise<void>((resolve, reject) => {
+    utterance.onend = () => resolve();
+    utterance.onerror = (error) => reject(error);
+    window.speechSynthesis.speak(utterance);
+  });
+};
