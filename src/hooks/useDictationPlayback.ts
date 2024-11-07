@@ -106,7 +106,6 @@ export const useDictationPlayback = () => {
   const playDictation = () => {
     if (!isPlaying) {
       setIsPlaying(true);
-      // Start playing from the current word index
       playFromIndex(currentWordIndex);
     }
   };
@@ -114,21 +113,28 @@ export const useDictationPlayback = () => {
   const playFromIndex = (index: number) => {
     if (index < wordSets.length) {
       const word = wordSets[index];
-      // Logic to play the word's audio
-      // After playing, move to the next word
-      setTimeout(() => {
+      audioRef.current = new Audio(word.audioUrl);
+      audioRef.current.play();
+
+      audioRef.current.onended = () => {
         setCurrentWordIndex(index + 1);
         playFromIndex(index + 1);
-      }, 1000); // Adjust timing as needed
+      };
     } else {
-      setIsPlaying(false);
-      setCurrentWordIndex(0); // Reset to start
+      stopDictation();
     }
   };
 
   const stopDictation = () => {
     setIsPlaying(false);
     setCurrentWordIndex(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const nextWord = () => {
