@@ -56,7 +56,13 @@ const resources = {
       'Dictation Player': 'Dictation Player',
       'Open Camera': 'Open Camera',
       'Take Photo': 'Take Photo',
-      'or': 'or'
+      'or': 'or',
+      'English': 'English',
+      'Number of Repetitions': 'Number of Repetitions',
+      'Reading Interval': 'Reading Interval',
+      'Upload Image': 'Upload Image',
+      'Processing...': 'Processing...',
+      'Recognized text will appear here...': 'Recognized text will appear here...'
     }
   },
   'zh-TW': {
