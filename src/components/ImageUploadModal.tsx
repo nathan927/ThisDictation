@@ -142,6 +142,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ isOpen, onClose, on
             <input
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={handleImageChange}
               className="w-full"
             />
