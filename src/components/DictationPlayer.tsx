@@ -11,7 +11,6 @@ interface Word {
 
 const DictationPlayer: React.FC = () => {
   const { t } = useTranslation();
-  const [showReminder, setShowReminder] = useState(true);
   const { 
     wordSets, 
     deleteWord, 
@@ -117,7 +116,7 @@ const DictationPlayer: React.FC = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
+    <div className="bg-white shadow rounded-lg p-6 relative">
       <h2 className="text-xl font-bold mb-4">{t('Dictation Player')}</h2>
       
       <div className="flex flex-col space-y-4">
@@ -190,14 +189,10 @@ const DictationPlayer: React.FC = () => {
           </button>
         </div>
       </div>
-      
-      {showReminder && (
-        <div className="absolute bottom-4 left-4">
-          <p className="text-red-500 text-sm italic">
-            Please click "PLAY" twice in the first time to activate the reading function.
-          </p>
-        </div>
-      )}
+
+      <div className="w-full text-center mt-4 text-xs text-red-500 sm:absolute sm:bottom-2 sm:left-2 sm:text-left sm:w-auto">
+        {t('Please click "Play" twice in the first time.')}
+      </div>
     </div>
   );
 };
