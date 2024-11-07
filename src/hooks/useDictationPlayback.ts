@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDictation } from '../context/DictationContext';
 
 interface WordWithAudio {
@@ -22,10 +22,18 @@ export const useDictationPlayback = () => {
   const speechSynthesis = window.speechSynthesis;
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  useEffect(() => {
-    // Force load voices
-    speechSynthesis.getVoices();
-  }, []);
+  const stopSpeaking = useCallback(() => {
+    try {
+      if (speechSynthesis && speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      setIsPlaying(false);
+      utteranceRef.current = null;
+    } catch (error) {
+      console.error('Error stopping speech:', error);
+      setIsPlaying(false);
+    }
+  }, [speechSynthesis]);
 
   const playAudio = (audioUrl: string): Promise<void> => {
     return new Promise((resolve) => {
@@ -39,6 +47,37 @@ export const useDictationPlayback = () => {
       audioRef.current.play();
     });
   };
+
+  const speakText = useCallback((text: string, language: string = 'en-US', repeats: number = 1, onComplete?: () => void) => {
+    if (!text || !speechSynthesis) return;
+
+    try {
+      stopSpeaking();
+      
+      // Add a small timeout to ensure speech synthesis is ready
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language;
+        utteranceRef.current = utterance;
+
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => {
+          setIsPlaying(false);
+          if (onComplete) onComplete();
+        };
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          console.error('Speech synthesis error');
+        };
+
+        speechSynthesis.speak(utterance);
+      }, 100); // 100ms delay
+
+    } catch (error) {
+      console.error('Error starting speech:', error);
+      setIsPlaying(false);
+    }
+  }, [speechSynthesis, stopSpeaking]);
 
   const speakWord = async (word: string | WordWithAudio) => {
     // Stop any ongoing audio or speech
@@ -169,8 +208,9 @@ export const useDictationPlayback = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      stopSpeaking();
     };
-  }, []);
+  }, [stopSpeaking]);
 
   return {
     playDictation,
