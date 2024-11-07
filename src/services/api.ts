@@ -8,8 +8,8 @@ interface Window {
 
 declare global {
   interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
+    SpeechRecognition: new () => any;
+    webkitSpeechRecognition: new () => any;
   }
 }
 
@@ -58,8 +58,7 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
     
     // Fallback to Web Speech API
     return new Promise((resolve, reject) => {
-      const SpeechRecognitionAPI: new () => SpeechRecognition = 
-        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognitionAPI();
       recognition.lang = 'en-US';
       recognition.continuous = true;
