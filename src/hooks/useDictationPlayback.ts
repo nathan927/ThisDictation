@@ -105,17 +105,7 @@ export const useDictationPlayback = () => {
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
-    
-    // Cancel any ongoing speech synthesis
-    window.speechSynthesis.cancel();
-    
-    // Reset state
     setIsPlaying(true);
-    setRepetitionCount(1);
-    
-    // Start from current word or beginning
-    const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
-    setCurrentWordIndex(startIndex);
     playCurrentWord();
   };
 

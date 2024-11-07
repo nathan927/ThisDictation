@@ -4,7 +4,6 @@ import { useDictation } from '../context/DictationContext';
 import VoiceUploadModal from './VoiceUploadModal';
 import ImageUploadModal from './ImageUploadModal';
 import ImportTxtButton from './ImportTxtButton';
-import Snackbar from '@mui/material/Snackbar';
 
 const ContentInput: React.FC = () => {
   const { t } = useTranslation();
@@ -13,7 +12,6 @@ const ContentInput: React.FC = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,14 +49,6 @@ const ContentInput: React.FC = () => {
 
   const buttonBaseClass = "px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-white text-center";
 
-  const handleTextUpload = () => {
-    if (!textAreaRef.current?.value.trim()) {
-      setOpenSnackbar(true);
-      return;
-    }
-    handleSubmit(new Event('submit'));
-  };
-
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">{t('Content Input')}</h2>
@@ -73,7 +63,7 @@ const ContentInput: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
         <button
-          onClick={handleTextUpload}
+          onClick={handleSubmit}
           className={`${buttonBaseClass} bg-gradient-to-r from-blue-500 to-blue-600`}
         >
           {t('Text Upload')}
@@ -124,13 +114,6 @@ const ContentInput: React.FC = () => {
           setWordSets(words);
           setIsImageModalOpen(false);
         }}
-      />
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-        message={t('There is no word to be added.')}
       />
     </div>
   );

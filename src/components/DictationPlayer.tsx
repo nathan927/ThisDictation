@@ -18,12 +18,10 @@ const DictationPlayer: React.FC = () => {
     isPlaying, 
     setIsPlaying,
     currentWordIndex,
-    setCurrentWordIndex,
-    settings 
+    setCurrentWordIndex 
   } = useDictation();
   
   const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
-  const { interval } = settings;
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
@@ -92,11 +90,13 @@ const DictationPlayer: React.FC = () => {
       setCurrentWordIndex(index);
       await speak(wordSets[index].text);
       
-      if (isPlaying) {
-        setTimeout(() => {
+      // Add a small delay between words
+      setTimeout(() => {
+        // Continue with next word if still playing
+        if (isPlaying) {
           playWord(index + 1);
-        }, interval * 1000);
-      }
+        }
+      }, 1000); // 1 second delay between words
     } catch (error) {
       console.error('Error playing word:', error);
       setIsPlaying(false);
@@ -104,9 +104,6 @@ const DictationPlayer: React.FC = () => {
   };
 
   const handlePlay = () => {
-    // Force stop any ongoing speech
-    window.speechSynthesis.cancel();
-    
     setIsPlaying(true);
     // Start from current word index or restart if at end
     const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
