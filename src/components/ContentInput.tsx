@@ -51,7 +51,8 @@ const ContentInput: React.FC = () => {
 
   const buttonBaseClass = "px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-white text-center";
 
-  const handleTextUpload = () => {
+  const handleTextUpload = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!textAreaRef.current?.value.trim()) {
       setOpenSnackbar(true);
       return;
