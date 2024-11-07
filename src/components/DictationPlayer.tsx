@@ -1,8 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
-import { speak } from '../services/api';
 
 interface Word {
   text: string;
@@ -15,16 +14,15 @@ const DictationPlayer: React.FC = () => {
     wordSets, 
     deleteWord, 
     deleteAllWords, 
-    isPlaying, 
-    setIsPlaying,
     currentWordIndex,
     setCurrentWordIndex 
   } = useDictation();
   
-  const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
+  const { speakText, stopSpeaking, isPlaying } = useDictationPlayback();
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
+      stopSpeaking();
       deleteWord(currentWordIndex);
       if (currentWordIndex === wordSets.length - 1) {
         setCurrentWordIndex(Math.max(0, currentWordIndex - 1));
@@ -34,9 +32,9 @@ const DictationPlayer: React.FC = () => {
 
   const handleDeleteAll = () => {
     if (window.confirm(t('Are you sure you want to delete all words?'))) {
+      stopSpeaking();
       deleteAllWords();
       setCurrentWordIndex(0);
-      setIsPlaying(false);
     }
   };
 
@@ -62,7 +60,7 @@ const DictationPlayer: React.FC = () => {
   };
 
   const handleExport = () => {
-    const BOM = '\uFEFF';  // Add BOM for UTF-8
+    const BOM = '\uFEFF';
     const text = wordSets.map(word => getWordText(word)).join('\n');
     const blob = new Blob([BOM + text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -75,53 +73,27 @@ const DictationPlayer: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Helper function to get word text
   const getWordText = (word: string | { text: string }) => {
     return typeof word === 'string' ? word : word.text;
   };
 
-  const playWord = async (index: number) => {
-    if (index >= wordSets.length) {
-      setIsPlaying(false);
-      return;
-    }
-
-    try {
-      setCurrentWordIndex(index);
-      await speak(wordSets[index].text);
-      
-      // Add a small delay between words
-      setTimeout(() => {
-        // Continue with next word if still playing
-        if (isPlaying) {
-          playWord(index + 1);
-        }
-      }, 1000); // 1 second delay between words
-    } catch (error) {
-      console.error('Error playing word:', error);
-      setIsPlaying(false);
-    }
-  };
-
-  const handlePlay = () => {
-    setIsPlaying(true);
-    // Start from current word index or restart if at end
-    const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
-    playWord(startIndex);
-  };
-
-  const handleStop = () => {
-    setIsPlaying(false);
-    setCurrentWordIndex(0);
-  };
-
-  const handlePlayClick = useCallback(() => {
+  const handlePlayClick = () => {
     if (isPlaying) {
-      stopDictation();
+      stopSpeaking();
     } else if (wordSets[currentWordIndex]) {
-      playDictation(wordSets[currentWordIndex].text);
+      speakText(wordSets[currentWordIndex].text);
     }
-  }, [isPlaying, wordSets, currentWordIndex, playDictation, stopDictation]);
+  };
+
+  const handlePrevious = () => {
+    stopSpeaking();
+    setCurrentWordIndex(Math.max(0, currentWordIndex - 1));
+  };
+
+  const handleNext = () => {
+    stopSpeaking();
+    setCurrentWordIndex(Math.min(wordSets.length - 1, currentWordIndex + 1));
+  };
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -146,7 +118,7 @@ const DictationPlayer: React.FC = () => {
 
         <div className="flex justify-center space-x-2">
           <button
-            onClick={previousWord}
+            onClick={handlePrevious}
             disabled={currentWordIndex === 0 || isPlaying}
             className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
           >
@@ -163,7 +135,7 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={nextWord}
+            onClick={handleNext}
             disabled={currentWordIndex === wordSets.length - 1 || isPlaying}
             className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
           >

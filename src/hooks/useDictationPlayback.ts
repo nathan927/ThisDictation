@@ -1,28 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useDictation } from '../context/DictationContext';
-
-interface WordWithAudio {
-  text: string;
-  audioUrl?: string;
-}
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export const useDictationPlayback = () => {
-  const { 
-    wordSets, 
-    currentWordIndex, 
-    setCurrentWordIndex,
-    isPlaying, 
-    setIsPlaying, 
-    settings 
-  } = useDictation();
-
-  const [repetitionCount, setRepetitionCount] = useState(1);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const speechSynthesis = window.speechSynthesis;
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Ensure speech synthesis is available
   useEffect(() => {
     if (!('speechSynthesis' in window)) {
       console.error('Speech synthesis not supported');
@@ -47,14 +29,12 @@ export const useDictationPlayback = () => {
     if (!text || !speechSynthesis) return;
 
     try {
-      // Cancel any ongoing speech
       stopSpeaking();
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = speed;
       utteranceRef.current = utterance;
 
-      // Add event listeners
       utterance.onstart = () => setIsPlaying(true);
       utterance.onend = () => {
         setIsPlaying(false);
@@ -66,7 +46,6 @@ export const useDictationPlayback = () => {
         utteranceRef.current = null;
       };
 
-      // Resume if synthesis is paused
       if (speechSynthesis.paused) {
         speechSynthesis.resume();
       }
@@ -78,156 +57,18 @@ export const useDictationPlayback = () => {
     }
   }, [speechSynthesis, stopSpeaking]);
 
-  const playAudio = (audioUrl: string): Promise<void> => {
-    return new Promise((resolve) => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.onended = () => {
-        resolve();
-      };
-      audioRef.current.play();
-    });
-  };
-
-  const speakWord = async (word: string | WordWithAudio) => {
-    // Stop any ongoing audio or speech
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
-
-    // Check if word is a voice recording
-    if (typeof word === 'object' && 'audioUrl' in word) {
-      return playAudio(word.audioUrl);
-    }
-
-    // For non-voice recording words, use text-to-speech
-    const text = typeof word === 'string' ? word : word.text;
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    switch (settings.pronunciation) {
-      case 'Cantonese':
-        utterance.lang = 'zh-HK';
-        break;
-      case 'Mandarin':
-        utterance.lang = 'zh-CN';
-        break;
-      default:
-        utterance.lang = 'en-US';
-    }
-
-    utterance.rate = settings.speed;
-
-    return new Promise<void>((resolve) => {
-      utterance.onend = () => resolve();
-      window.speechSynthesis.speak(utterance);
-    });
-  };
-
-  const playCurrentWord = async () => {
-    if (!isPlaying || wordSets.length === 0) return;
-
-    const currentWord = wordSets[currentWordIndex];
-    if (!currentWord) return;
-
-    for (let i = 0; i < settings.repetitions; i++) {
-      if (!isPlaying) break;
-      await speakWord(currentWord);
-      if (i < settings.repetitions - 1) {
-        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
-      }
-    }
-
-    if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      timeoutRef.current = setTimeout(() => {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }, settings.interval * 1000);
-    } else if (currentWordIndex === wordSets.length - 1) {
-      setIsPlaying(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isPlaying) {
-      playCurrentWord();
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [currentWordIndex, isPlaying]);
-
-  const playDictation = () => {
-    if (wordSets.length === 0) return;
-    setIsPlaying(true);
-    playCurrentWord();
-  };
-
-  const stopDictation = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
-
-  const nextWord = () => {
-    if (currentWordIndex < wordSets.length - 1) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      window.speechSynthesis.cancel();
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      setCurrentWordIndex(currentWordIndex + 1);
-    }
-  };
-
-  const previousWord = () => {
-    if (currentWordIndex > 0) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      window.speechSynthesis.cancel();
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      setCurrentWordIndex(currentWordIndex - 1);
-    }
-  };
-
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      window.speechSynthesis.cancel();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      stopSpeaking();
     };
-  }, []);
+  }, [stopSpeaking]);
 
   return {
-    playDictation,
-    stopDictation,
-    nextWord,
-    previousWord,
-    repetitionCount
+    speakText,
+    stopSpeaking,
+    isPlaying
   };
 };
+
+// Export the type for the hook's return value
+export type DictationPlayback = ReturnType<typeof useDictationPlayback>;
