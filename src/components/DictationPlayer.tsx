@@ -20,6 +20,8 @@ const DictationPlayer: React.FC = () => {
   
   const { speakText, stopSpeaking, isPlaying } = useDictationPlayback();
 
+  const { settings } = useDictationContext();
+
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
       stopSpeaking();
@@ -81,7 +83,19 @@ const DictationPlayer: React.FC = () => {
     if (isPlaying) {
       stopSpeaking();
     } else if (wordSets[currentWordIndex]) {
-      speakText(wordSets[currentWordIndex].text);
+      const language = settings.pronunciation === 'Cantonese' ? 'zh-HK' : 'en-US';
+      
+      speakText(
+        wordSets[currentWordIndex].text,
+        language,
+        settings.numberOfRepetitions,
+        () => {
+          // Auto-advance to next word when repetitions are complete
+          if (currentWordIndex < wordSets.length - 1) {
+            setCurrentWordIndex(prev => prev + 1);
+          }
+        }
+      );
     }
   };
 
