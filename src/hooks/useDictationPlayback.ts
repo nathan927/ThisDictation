@@ -75,19 +75,24 @@ export const useDictationPlayback = () => {
     const currentWord = wordSets[currentWordIndex];
     if (!currentWord) return;
 
-    for (let i = 0; i < settings.repetitions; i++) {
-      if (!isPlaying) break;
-      await speakWord(currentWord);
-      if (i < settings.repetitions - 1) {
-        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+    try {
+      for (let i = 0; i < settings.repetitions; i++) {
+        if (!isPlaying) break;
+        await speakWord(currentWord);
+        if (i < settings.repetitions - 1 && isPlaying) {
+          await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+        }
       }
-    }
 
-    if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      timeoutRef.current = setTimeout(() => {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }, settings.interval * 1000);
-    } else if (currentWordIndex === wordSets.length - 1) {
+      if (isPlaying && currentWordIndex < wordSets.length - 1) {
+        timeoutRef.current = setTimeout(() => {
+          setCurrentWordIndex(currentWordIndex + 1);
+        }, settings.interval * 1000);
+      } else if (currentWordIndex === wordSets.length - 1) {
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('Error playing word:', error);
       setIsPlaying(false);
     }
   };
@@ -95,16 +100,6 @@ export const useDictationPlayback = () => {
   useEffect(() => {
     if (isPlaying) {
       playCurrentWord();
-    } else {
-      // Cancel any ongoing speech when stopping
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      window.speechSynthesis.cancel();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
     }
     return () => {
       if (timeoutRef.current) {
@@ -115,7 +110,16 @@ export const useDictationPlayback = () => {
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
+    
+    // Initialize speech synthesis
+    const utterance = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(utterance);
+    
     setIsPlaying(true);
+    // Only reset to first word if we're at the end
+    if (currentWordIndex >= wordSets.length) {
+      setCurrentWordIndex(0);
+    }
   };
 
   const stopDictation = () => {
@@ -125,7 +129,6 @@ export const useDictationPlayback = () => {
     }
     window.speechSynthesis.cancel();
     setIsPlaying(false);
-    setCurrentWordIndex(0); // Reset to first word
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
