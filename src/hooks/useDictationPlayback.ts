@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDictation } from '../context/DictationContext';
 
 interface WordWithAudio {
@@ -19,6 +19,64 @@ export const useDictationPlayback = () => {
   const [repetitionCount, setRepetitionCount] = useState(1);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speechSynthesis = window.speechSynthesis;
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Ensure speech synthesis is available
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      console.error('Speech synthesis not supported');
+      return;
+    }
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    try {
+      if (speechSynthesis && speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      setIsPlaying(false);
+      utteranceRef.current = null;
+    } catch (error) {
+      console.error('Error stopping speech:', error);
+      setIsPlaying(false);
+    }
+  }, [speechSynthesis]);
+
+  const speakText = useCallback((text: string, speed: number = 1) => {
+    if (!text || !speechSynthesis) return;
+
+    try {
+      // Cancel any ongoing speech
+      stopSpeaking();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = speed;
+      utteranceRef.current = utterance;
+
+      // Add event listeners
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => {
+        setIsPlaying(false);
+        utteranceRef.current = null;
+      };
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsPlaying(false);
+        utteranceRef.current = null;
+      };
+
+      // Resume if synthesis is paused
+      if (speechSynthesis.paused) {
+        speechSynthesis.resume();
+      }
+
+      speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Error starting speech:', error);
+      setIsPlaying(false);
+    }
+  }, [speechSynthesis, stopSpeaking]);
 
   const playAudio = (audioUrl: string): Promise<void> => {
     return new Promise((resolve) => {
@@ -75,24 +133,19 @@ export const useDictationPlayback = () => {
     const currentWord = wordSets[currentWordIndex];
     if (!currentWord) return;
 
-    try {
-      for (let i = 0; i < settings.repetitions; i++) {
-        if (!isPlaying) break;
-        await speakWord(currentWord);
-        if (i < settings.repetitions - 1 && isPlaying) {
-          await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
-        }
+    for (let i = 0; i < settings.repetitions; i++) {
+      if (!isPlaying) break;
+      await speakWord(currentWord);
+      if (i < settings.repetitions - 1) {
+        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
       }
+    }
 
-      if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        timeoutRef.current = setTimeout(() => {
-          setCurrentWordIndex(currentWordIndex + 1);
-        }, settings.interval * 1000);
-      } else if (currentWordIndex === wordSets.length - 1) {
-        setIsPlaying(false);
-      }
-    } catch (error) {
-      console.error('Error playing word:', error);
+    if (isPlaying && currentWordIndex < wordSets.length - 1) {
+      timeoutRef.current = setTimeout(() => {
+        setCurrentWordIndex(currentWordIndex + 1);
+      }, settings.interval * 1000);
+    } else if (currentWordIndex === wordSets.length - 1) {
       setIsPlaying(false);
     }
   };
@@ -110,16 +163,8 @@ export const useDictationPlayback = () => {
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
-    
-    // Initialize speech synthesis
-    const utterance = new SpeechSynthesisUtterance('');
-    window.speechSynthesis.speak(utterance);
-    
     setIsPlaying(true);
-    // Only reset to first word if we're at the end
-    if (currentWordIndex >= wordSets.length) {
-      setCurrentWordIndex(0);
-    }
+    playCurrentWord();
   };
 
   const stopDictation = () => {

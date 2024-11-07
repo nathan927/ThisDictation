@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
@@ -115,6 +115,14 @@ const DictationPlayer: React.FC = () => {
     setCurrentWordIndex(0);
   };
 
+  const handlePlayClick = useCallback(() => {
+    if (isPlaying) {
+      stopDictation();
+    } else if (wordSets[currentWordIndex]) {
+      playDictation(wordSets[currentWordIndex].text);
+    }
+  }, [isPlaying, wordSets, currentWordIndex, playDictation, stopDictation]);
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-4">{t('Dictation Player')}</h2>
@@ -146,7 +154,7 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={isPlaying ? handleStop : handlePlay}
+            onClick={handlePlayClick}
             className={`px-4 py-2 rounded text-white ${
               isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
             }`}
