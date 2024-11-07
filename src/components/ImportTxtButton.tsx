@@ -9,8 +9,9 @@ const ImportTxtButton: React.FC = () => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check if the file is a .txt file
-      if (file.type !== 'text/plain') {
+      // Check if the file has a .txt extension
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith('.txt')) {
         alert(t('Please upload TXT file'));
         event.target.value = ''; // Reset the input
         return;
