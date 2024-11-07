@@ -15,16 +15,19 @@ const ContentInput: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (textAreaRef.current?.value.trim()) {
-      const newWords = textAreaRef.current.value
-        .split('\n')
-        .map(word => word.trim())
-        .filter(word => word.length > 0)
-        .map(text => ({ text }));
-      setWordSets(prevWords => [...prevWords, ...newWords]);
-      if (textAreaRef.current) {
-        textAreaRef.current.value = '';
-      }
+    if (!textAreaRef.current?.value.trim()) {
+      alert(t('Please provide the words'));
+      return;
+    }
+    
+    const newWords = textAreaRef.current.value
+      .split('\n')
+      .map(word => word.trim())
+      .filter(word => word.length > 0)
+      .map(text => ({ text }));
+    setWordSets(prevWords => [...prevWords, ...newWords]);
+    if (textAreaRef.current) {
+      textAreaRef.current.value = '';
     }
   };
 
