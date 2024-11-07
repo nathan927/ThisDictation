@@ -104,21 +104,31 @@ export const useDictationPlayback = () => {
   }, [currentWordIndex, isPlaying]);
 
   const playDictation = () => {
-    if (wordSets.length === 0) return;
-    setIsPlaying(true);
-    playCurrentWord();
+    if (!isPlaying) {
+      setIsPlaying(true);
+      // Start playing from the current word index
+      playFromIndex(currentWordIndex);
+    }
+  };
+
+  const playFromIndex = (index: number) => {
+    if (index < wordSets.length) {
+      const word = wordSets[index];
+      // Logic to play the word's audio
+      // After playing, move to the next word
+      setTimeout(() => {
+        setCurrentWordIndex(index + 1);
+        playFromIndex(index + 1);
+      }, 1000); // Adjust timing as needed
+    } else {
+      setIsPlaying(false);
+      setCurrentWordIndex(0); // Reset to start
+    }
   };
 
   const stopDictation = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
     setIsPlaying(false);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    setCurrentWordIndex(0);
   };
 
   const nextWord = () => {
