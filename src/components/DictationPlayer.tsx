@@ -2,6 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
+import { DictationContext } from '../context/DictationContext';
+import { useContext } from 'react';
 
 interface Word {
   text: string;
@@ -19,8 +21,7 @@ const DictationPlayer: React.FC = () => {
   } = useDictation();
   
   const { speakText, stopSpeaking, isPlaying } = useDictationPlayback();
-
-  const { settings } = useDictationContext();
+  const { settings } = useContext(DictationContext);
 
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
@@ -88,11 +89,10 @@ const DictationPlayer: React.FC = () => {
       speakText(
         wordSets[currentWordIndex].text,
         language,
-        settings.numberOfRepetitions,
+        settings.repetitions || 1,
         () => {
-          // Auto-advance to next word when repetitions are complete
           if (currentWordIndex < wordSets.length - 1) {
-            setCurrentWordIndex(prev => prev + 1);
+            setCurrentWordIndex(currentWordIndex + 1);
           }
         }
       );

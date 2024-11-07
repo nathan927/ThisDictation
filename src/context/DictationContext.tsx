@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface DictationSettings {
+export interface DictationSettings {
+  pronunciation: 'English' | 'Cantonese' | 'Mandarin';
   repetitions: number;
   interval: number;
   speed: number;
-  pronunciation: string;
 }
 
 interface Word {
@@ -31,10 +31,10 @@ export const DictationContext = createContext<DictationContextType>({
   currentWordIndex: 0,
   isPlaying: false,
   settings: {
-    repetitions: 3,
-    interval: 2,
-    speed: 1,
-    pronunciation: 'English'
+    pronunciation: 'English',
+    repetitions: 1,
+    interval: 1,
+    speed: 1
   },
   setWordSets: () => {},
   deleteWord: () => {},
@@ -50,7 +50,7 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const getDefaultPronunciation = () => {
+  const getDefaultPronunciation = (): DictationSettings['pronunciation'] => {
     switch (i18n.language) {
       case 'zh-CN':
         return 'Mandarin';
@@ -61,12 +61,14 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const [settings, setSettings] = useState<DictationSettings>({
-    repetitions: 3,
-    interval: 2,
-    speed: 1,
-    pronunciation: getDefaultPronunciation()
-  });
+  const defaultSettings: DictationSettings = {
+    pronunciation: getDefaultPronunciation(),
+    repetitions: 1,
+    interval: 1,
+    speed: 1
+  };
+
+  const [settings, setSettings] = useState<DictationSettings>(defaultSettings);
 
   // Update pronunciation when language changes
   useEffect(() => {
