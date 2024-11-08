@@ -90,7 +90,7 @@ export const useDictationPlayback = () => {
       // Move to next word after a short delay
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
         await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
-        setCurrentWordIndex(prev => prev + 1);
+        setCurrentWordIndex(currentWordIndex + 1);
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
