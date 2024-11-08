@@ -33,35 +33,42 @@ export const useDictationPlayback = () => {
   };
 
   const speakWord = async (word: string | WordWithAudio) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
+    return new Promise<void>((resolve, reject) => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+        window.speechSynthesis.cancel();
 
-    if (typeof word === 'object' && 'audioUrl' in word) {
-      return playAudio(word.audioUrl);
-    }
+        if (typeof word === 'object' && 'audioUrl' in word) {
+          return playAudio(word.audioUrl);
+        }
 
-    const text = typeof word === 'string' ? word : word.text;
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    switch (settings.pronunciation) {
-      case 'Cantonese':
-        utterance.lang = 'zh-HK';
-        break;
-      case 'Mandarin':
-        utterance.lang = 'zh-CN';
-        break;
-      default:
-        utterance.lang = 'en-US';
-    }
+        const text = typeof word === 'string' ? word : word.text;
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        switch (settings.pronunciation) {
+          case 'Cantonese':
+            utterance.lang = 'zh-HK';
+            break;
+          case 'Mandarin':
+            utterance.lang = 'zh-CN';
+            break;
+          default:
+            utterance.lang = 'en-US';
+        }
 
-    utterance.rate = settings.speed;
-
-    return new Promise<void>((resolve) => {
-      utterance.onend = () => resolve();
-      window.speechSynthesis.speak(utterance);
+        utterance.rate = settings.speed;
+        utterance.onend = () => resolve();
+        utterance.onerror = (event) => reject(event);
+        
+        // Force speech synthesis to work on mobile
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        reject(error);
+      }
     });
   };
 
@@ -73,18 +80,21 @@ export const useDictationPlayback = () => {
 
     try {
       for (let i = 0; i < settings.repetitions; i++) {
-        if (!isPlaying) return; // Exit immediately if stopped
+        if (!isPlaying) return;
         await speakWord(currentWord);
         if (i < settings.repetitions - 1 && isPlaying) {
-          await new Promise(resolve => {
-            timeoutRef.current = setTimeout(resolve, settings.interval * 1000);
+          await new Promise<void>((resolve) => {
+            timeoutRef.current = setTimeout(() => {
+              if (isPlaying) {
+                resolve();
+              }
+            }, settings.interval * 1000);
           });
         }
       }
 
-      // Only proceed to next word if still playing
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        setCurrentWordIndex(currentWordIndex + 1);
+        setCurrentWordIndex(prev => prev + 1);
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
