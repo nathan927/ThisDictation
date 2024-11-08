@@ -93,17 +93,8 @@ export const useDictationPlayback = () => {
 
       // Move to next word if not at the end
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        // Clear any existing timeout
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        
-        // Move to next word immediately
         setCurrentWordIndex(currentWordIndex + 1);
-        
-        // Wait for the state to update and then play the next word
-        await new Promise<void>(resolve => setTimeout(resolve, 100));
-        await playCurrentWord();
+        playCurrentWord(); // Directly call to play next word
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
