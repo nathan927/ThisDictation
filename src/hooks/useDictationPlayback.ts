@@ -79,18 +79,24 @@ export const useDictationPlayback = () => {
       // Complete all repetitions for current word
       for (let i = 0; i < settings.repetitions; i++) {
         if (!isPlaying) return;
+        
+        // Ensure previous speech is cancelled
+        window.speechSynthesis.cancel();
         await speakWord(currentWord);
         
-        // Wait between repetitions
+        // Wait between repetitions if not the last repetition
         if (i < settings.repetitions - 1 && isPlaying) {
-          await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+          await new Promise<void>((resolve) => {
+            timeoutRef.current = setTimeout(resolve, settings.interval * 1000);
+          });
         }
       }
 
-      // Move to next word after a short delay
+      // If still playing and not the last word, move to next word
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
-        setCurrentWordIndex(currentWordIndex + 1);
+        timeoutRef.current = setTimeout(() => {
+          setCurrentWordIndex(currentWordIndex + 1);
+        }, settings.interval * 1000);
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
@@ -100,16 +106,24 @@ export const useDictationPlayback = () => {
     }
   };
 
+  // Modified useEffect to handle state changes
   useEffect(() => {
     if (isPlaying) {
+      // Cancel any ongoing speech when starting new word
+      window.speechSynthesis.cancel();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       playCurrentWord();
     }
+    
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      window.speechSynthesis.cancel();
     };
-  }, [currentWordIndex, isPlaying]);
+  }, [isPlaying, currentWordIndex]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
