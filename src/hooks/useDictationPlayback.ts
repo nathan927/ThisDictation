@@ -94,7 +94,7 @@ export const useDictationPlayback = () => {
       }
 
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        setCurrentWordIndex(prev => prev + 1);
+        setCurrentWordIndex(currentWordIndex + 1);
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
