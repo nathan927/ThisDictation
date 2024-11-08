@@ -16,6 +16,7 @@ export const useDictationPlayback = () => {
     settings 
   } = useDictation();
 
+  const [repetitionCount, setRepetitionCount] = useState(1);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -33,78 +34,60 @@ export const useDictationPlayback = () => {
   };
 
   const speakWord = async (word: string | WordWithAudio) => {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current = null;
-        }
-        window.speechSynthesis.cancel();
+    // Stop any ongoing audio or speech
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    window.speechSynthesis.cancel();
 
-        if (typeof word === 'object' && 'audioUrl' in word) {
-          return playAudio(word.audioUrl);
-        }
+    // Check if word is a voice recording
+    if (typeof word === 'object' && 'audioUrl' in word) {
+      return playAudio(word.audioUrl);
+    }
 
-        const text = typeof word === 'string' ? word : word.text;
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        switch (settings.pronunciation) {
-          case 'Cantonese':
-            utterance.lang = 'zh-HK';
-            break;
-          case 'Mandarin':
-            utterance.lang = 'zh-CN';
-            break;
-          default:
-            utterance.lang = 'en-US';
-        }
+    // For non-voice recording words, use text-to-speech
+    const text = typeof word === 'string' ? word : word.text;
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    switch (settings.pronunciation) {
+      case 'Cantonese':
+        utterance.lang = 'zh-HK';
+        break;
+      case 'Mandarin':
+        utterance.lang = 'zh-CN';
+        break;
+      default:
+        utterance.lang = 'en-US';
+    }
 
-        utterance.rate = settings.speed;
-        utterance.onend = () => resolve();
-        utterance.onerror = (event) => reject(event);
-        
-        // Force speech synthesis to work on mobile
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-      } catch (error) {
-        reject(error);
-      }
+    utterance.rate = settings.speed;
+
+    return new Promise<void>((resolve) => {
+      utterance.onend = () => resolve();
+      window.speechSynthesis.speak(utterance);
     });
   };
 
   const playCurrentWord = async () => {
     if (!isPlaying || wordSets.length === 0) return;
 
-    try {
-      while (isPlaying && currentWordIndex < wordSets.length) {
-        const currentWord = wordSets[currentWordIndex];
-        if (!currentWord) return;
+    const currentWord = wordSets[currentWordIndex];
+    if (!currentWord) return;
 
-        // Complete all repetitions for current word
-        for (let i = 0; i < settings.repetitions; i++) {
-          if (!isPlaying) return;
-          await speakWord(currentWord);
-          
-          // Wait between repetitions
-          if (i < settings.repetitions - 1 && isPlaying) {
-            await new Promise<void>((resolve) => {
-              timeoutRef.current = setTimeout(() => {
-                if (isPlaying) resolve();
-              }, settings.interval * 1000);
-            });
-          }
-        }
-
-        // Move to next word if not at the end
-        if (isPlaying && currentWordIndex < wordSets.length - 1) {
-          setCurrentWordIndex(currentWordIndex + 1);
-        } else {
-          setIsPlaying(false);
-          break;
-        }
+    for (let i = 0; i < settings.repetitions; i++) {
+      if (!isPlaying) break;
+      await speakWord(currentWord);
+      if (i < settings.repetitions - 1) {
+        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
       }
-    } catch (error) {
-      console.error('Error in playCurrentWord:', error);
+    }
+
+    if (isPlaying && currentWordIndex < wordSets.length - 1) {
+      timeoutRef.current = setTimeout(() => {
+        setCurrentWordIndex(currentWordIndex + 1);
+      }, settings.interval * 1000);
+    } else if (currentWordIndex === wordSets.length - 1) {
       setIsPlaying(false);
     }
   };
@@ -116,10 +99,9 @@ export const useDictationPlayback = () => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
       }
     };
-  }, [isPlaying]);
+  }, [currentWordIndex, isPlaying]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
@@ -128,18 +110,14 @@ export const useDictationPlayback = () => {
   };
 
   const stopDictation = () => {
-    setIsPlaying(false); // Set this first to prevent any new playback
-    
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    
     window.speechSynthesis.cancel();
-    
+    setIsPlaying(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
     }
   };
 
@@ -173,6 +151,7 @@ export const useDictationPlayback = () => {
     }
   };
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -190,6 +169,7 @@ export const useDictationPlayback = () => {
     playDictation,
     stopDictation,
     nextWord,
-    previousWord
+    previousWord,
+    repetitionCount
   };
 };
