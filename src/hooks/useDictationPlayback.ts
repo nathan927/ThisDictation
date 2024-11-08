@@ -75,19 +75,27 @@ export const useDictationPlayback = () => {
     const currentWord = wordSets[currentWordIndex];
     if (!currentWord) return;
 
-    for (let i = 0; i < settings.repetitions; i++) {
-      if (!isPlaying) break;
-      await speakWord(currentWord);
-      if (i < settings.repetitions - 1) {
-        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+    try {
+      // Complete all repetitions for current word
+      for (let i = 0; i < settings.repetitions; i++) {
+        if (!isPlaying) return;
+        await speakWord(currentWord);
+        
+        // Wait between repetitions
+        if (i < settings.repetitions - 1 && isPlaying) {
+          await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+        }
       }
-    }
 
-    if (isPlaying && currentWordIndex < wordSets.length - 1) {
-      timeoutRef.current = setTimeout(() => {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }, settings.interval * 1000);
-    } else if (currentWordIndex === wordSets.length - 1) {
+      // Move to next word after a short delay
+      if (isPlaying && currentWordIndex < wordSets.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+        setCurrentWordIndex(prev => prev + 1);
+      } else if (currentWordIndex === wordSets.length - 1) {
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('Error in playCurrentWord:', error);
       setIsPlaying(false);
     }
   };
