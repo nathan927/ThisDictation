@@ -81,23 +81,26 @@ export const useDictationPlayback = () => {
         if (!isPlaying) return;
         await speakWord(currentWord);
         
-        // Wait between repetitions
         if (i < settings.repetitions - 1 && isPlaying) {
           await new Promise<void>((resolve) => {
             timeoutRef.current = setTimeout(() => {
-              if (isPlaying) resolve();
+              resolve();
             }, settings.interval * 1000);
           });
         }
       }
 
-      // Move to next word if not at the end
-      if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        setCurrentWordIndex(currentWordIndex + 1);
-        playCurrentWord(); // Directly call to play next word
-      } else if (currentWordIndex === wordSets.length - 1) {
-        setIsPlaying(false);
-      }
+      // Add a small delay before moving to next word
+      await new Promise<void>((resolve) => {
+        timeoutRef.current = setTimeout(() => {
+          if (isPlaying && currentWordIndex < wordSets.length - 1) {
+            setCurrentWordIndex(currentWordIndex + 1);
+          } else if (currentWordIndex === wordSets.length - 1) {
+            setIsPlaying(false);
+          }
+          resolve();
+        }, settings.interval * 1000);
+      });
     } catch (error) {
       console.error('Error in playCurrentWord:', error);
       setIsPlaying(false);
@@ -115,7 +118,7 @@ export const useDictationPlayback = () => {
       }
       window.speechSynthesis.cancel();
     };
-  }, [isPlaying]);
+  }, [isPlaying, currentWordIndex]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
