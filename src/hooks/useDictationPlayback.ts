@@ -75,30 +75,33 @@ export const useDictationPlayback = () => {
   const playCurrentWord = async () => {
     if (!isPlaying || wordSets.length === 0) return;
 
-    const currentWord = wordSets[currentWordIndex];
-    if (!currentWord) return;
-
     try {
-      // Complete all repetitions for current word
-      for (let i = 0; i < settings.repetitions; i++) {
-        if (!isPlaying) return;
-        await speakWord(currentWord);
-        
-        // Wait between repetitions
-        if (i < settings.repetitions - 1 && isPlaying) {
-          await new Promise<void>((resolve) => {
-            timeoutRef.current = setTimeout(() => {
-              if (isPlaying) resolve();
-            }, settings.interval * 1000);
-          });
-        }
-      }
+      while (isPlaying && currentWordIndex < wordSets.length) {
+        const currentWord = wordSets[currentWordIndex];
+        if (!currentWord) return;
 
-      // After all repetitions, move to next word
-      if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        setCurrentWordIndex(currentWordIndex + 1);
-      } else if (currentWordIndex === wordSets.length - 1) {
-        setIsPlaying(false);
+        // Complete all repetitions for current word
+        for (let i = 0; i < settings.repetitions; i++) {
+          if (!isPlaying) return;
+          await speakWord(currentWord);
+          
+          // Wait between repetitions
+          if (i < settings.repetitions - 1 && isPlaying) {
+            await new Promise<void>((resolve) => {
+              timeoutRef.current = setTimeout(() => {
+                if (isPlaying) resolve();
+              }, settings.interval * 1000);
+            });
+          }
+        }
+
+        // Move to next word if not at the end
+        if (isPlaying && currentWordIndex < wordSets.length - 1) {
+          setCurrentWordIndex(currentWordIndex + 1);
+        } else {
+          setIsPlaying(false);
+          break;
+        }
       }
     } catch (error) {
       console.error('Error in playCurrentWord:', error);
@@ -116,7 +119,7 @@ export const useDictationPlayback = () => {
         timeoutRef.current = null;
       }
     };
-  }, [isPlaying, currentWordIndex]);
+  }, [isPlaying]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
