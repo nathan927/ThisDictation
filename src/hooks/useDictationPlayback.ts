@@ -83,7 +83,6 @@ export const useDictationPlayback = () => {
         if (!isPlaying) return;
         await speakWord(currentWord);
         
-        // Wait for interval between repetitions
         if (i < settings.repetitions - 1 && isPlaying) {
           await new Promise<void>((resolve) => {
             timeoutRef.current = setTimeout(() => {
@@ -96,8 +95,6 @@ export const useDictationPlayback = () => {
       // Move to next word if still playing
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
         setCurrentWordIndex(currentWordIndex + 1);
-        // Trigger next word immediately
-        playCurrentWord();
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
@@ -117,7 +114,7 @@ export const useDictationPlayback = () => {
         timeoutRef.current = null;
       }
     };
-  }, [isPlaying]); // Only depend on isPlaying, not currentWordIndex
+  }, [isPlaying, currentWordIndex]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
