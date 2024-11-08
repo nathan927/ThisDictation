@@ -95,6 +95,11 @@ export const useDictationPlayback = () => {
       // Move to next word if still playing
       if (isPlaying && currentWordIndex < wordSets.length - 1) {
         setCurrentWordIndex(currentWordIndex + 1);
+        setTimeout(() => {
+          if (isPlaying) {
+            playCurrentWord();
+          }
+        }, 100);
       } else if (currentWordIndex === wordSets.length - 1) {
         setIsPlaying(false);
       }
@@ -114,7 +119,7 @@ export const useDictationPlayback = () => {
         timeoutRef.current = null;
       }
     };
-  }, [isPlaying, currentWordIndex]);
+  }, [isPlaying]);
 
   const playDictation = () => {
     if (wordSets.length === 0) return;
