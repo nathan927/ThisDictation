@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Create .nojekyll file
+touch .nojekyll
+git add .nojekyll
+# Ensure it gets copied to dist
+echo "Adding .nojekyll file to build process..."
+cp .nojekyll dist/ || true
+
+# Deploy to GitHub Pages
+npm run deploy
