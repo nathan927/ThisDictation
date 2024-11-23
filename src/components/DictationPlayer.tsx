@@ -111,7 +111,7 @@ const DictationPlayer: React.FC = () => {
   };
 
   const handleStop = () => {
-    stopDictation();
+    setIsPlaying(false);
     setCurrentWordIndex(0);
   };
 
