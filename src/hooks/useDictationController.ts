@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { useDictation } from '../context/DictationContext';
 import { useSpeechSynthesis } from './useSpeechSynthesis';
 

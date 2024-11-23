@@ -1,80 +1,15 @@
 import { useCallback, useRef, useEffect } from 'react';
-import { useDictation } from '../context/DictationContext';
 
-export const useDictationPlayback = () => {
-  const {
-    wordSets,
-    currentWordIndex,
-    setCurrentWordIndex,
-    isPlaying,
-    setIsPlaying,
-    settings
-  } = useDictation();
+interface SpeechOptions {
+  rate: number;
+  interval: number;
+}
 
+export const useSpeechSynthesis = () => {
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isPlayingRef = useRef(isPlaying);
 
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
-
-  const getWordText = useCallback((word: string | { text: string }) => {
-    return typeof word === 'string' ? word : word.text;
-  }, []);
-
-  const speakWord = useCallback((text: string): Promise<void> => {
-    return new Promise((resolve) => {
-      if (speechRef.current) {
-        speechSynthesis.cancel();
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = settings.speed;
-      
-      utterance.onend = () => {
-        setTimeout(resolve, settings.interval * 1000);
-      };
-
-      utterance.onerror = () => {
-        resolve();
-      };
-
-      speechRef.current = utterance;
-      speechSynthesis.speak(utterance);
-    });
-  }, [settings.speed, settings.interval]);
-
-  const playDictation = useCallback(async () => {
-    setIsPlaying(true);
-    
-    try {
-      for (let rep = 0; rep < settings.repetitions; rep++) {
-        for (let i = currentWordIndex; i < wordSets.length; i++) {
-          if (!isPlayingRef.current) return;
-          
-          setCurrentWordIndex(i);
-          await speakWord(getWordText(wordSets[i]));
-        }
-        
-        if (rep < settings.repetitions - 1) {
-          setCurrentWordIndex(0);
-        }
-      }
-    } finally {
-      setIsPlaying(false);
-    }
-  }, [
-    wordSets,
-    currentWordIndex,
-    settings.repetitions,
-    setIsPlaying,
-    setCurrentWordIndex,
-    speakWord,
-    getWordText
-  ]);
-
-  const stopDictation = useCallback(() => {
+  const cleanup = useCallback(() => {
     if (speechRef.current) {
       speechSynthesis.cancel();
       speechRef.current = null;
@@ -83,33 +18,38 @@ export const useDictationPlayback = () => {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-    setIsPlaying(false);
-  }, [setIsPlaying]);
+  }, []);
 
   useEffect(() => {
-    return () => {
-      stopDictation();
-    };
-  }, [stopDictation]);
+    return cleanup;
+  }, [cleanup]);
 
-  const nextWord = useCallback(() => {
-    if (currentWordIndex < wordSets.length - 1) {
-      stopDictation();
-      setCurrentWordIndex(currentWordIndex + 1);
-    }
-  }, [currentWordIndex, wordSets.length, stopDictation, setCurrentWordIndex]);
+  const speak = useCallback((text: string, options: SpeechOptions): Promise<void> => {
+    return new Promise((resolve) => {
+      cleanup();
 
-  const previousWord = useCallback(() => {
-    if (currentWordIndex > 0) {
-      stopDictation();
-      setCurrentWordIndex(currentWordIndex - 1);
-    }
-  }, [currentWordIndex, stopDictation, setCurrentWordIndex]);
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = options.rate;
+
+      utterance.onend = () => {
+        timeoutRef.current = setTimeout(() => {
+          cleanup();
+          resolve();
+        }, options.interval * 1000);
+      };
+
+      utterance.onerror = () => {
+        cleanup();
+        resolve();
+      };
+
+      speechRef.current = utterance;
+      speechSynthesis.speak(utterance);
+    });
+  }, [cleanup]);
 
   return {
-    playDictation,
-    stopDictation,
-    nextWord,
-    previousWord
+    speak,
+    stop: cleanup
   };
 };
