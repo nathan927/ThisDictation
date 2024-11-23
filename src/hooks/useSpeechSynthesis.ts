@@ -1,4 +1,5 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
+import { useDictation } from '../context/DictationContext';
 
 interface SpeechOptions {
   rate: number;
@@ -6,8 +7,34 @@ interface SpeechOptions {
 }
 
 export const useSpeechSynthesis = () => {
+  const { settings } = useDictation();
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      setVoices(window.speechSynthesis.getVoices());
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const getVoiceForLanguage = useCallback((pronunciation: string) => {
+    const languageMap: { [key: string]: string } = {
+      'English': 'en-US',
+      'Cantonese': 'zh-HK',
+      'Mandarin': 'zh-CN'
+    };
+
+    const langCode = languageMap[pronunciation];
+    return voices.find(voice => voice.lang.startsWith(langCode)) || voices[0];
+  }, [voices]);
 
   const cleanup = useCallback(() => {
     if (speechRef.current) {
@@ -29,7 +56,18 @@ export const useSpeechSynthesis = () => {
       cleanup();
 
       const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Apply all settings
       utterance.rate = options.rate;
+      utterance.voice = getVoiceForLanguage(settings.pronunciation);
+      
+      // Set language based on pronunciation
+      const languageMap: { [key: string]: string } = {
+        'English': 'en-US',
+        'Cantonese': 'zh-HK',
+        'Mandarin': 'zh-CN'
+      };
+      utterance.lang = languageMap[settings.pronunciation];
 
       utterance.onend = () => {
         timeoutRef.current = setTimeout(() => {
@@ -38,7 +76,8 @@ export const useSpeechSynthesis = () => {
         }, options.interval * 1000);
       };
 
-      utterance.onerror = () => {
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
         cleanup();
         resolve();
       };
@@ -46,7 +85,7 @@ export const useSpeechSynthesis = () => {
       speechRef.current = utterance;
       speechSynthesis.speak(utterance);
     });
-  }, [cleanup]);
+  }, [cleanup, getVoiceForLanguage, settings.pronunciation]);
 
   return {
     speak,
