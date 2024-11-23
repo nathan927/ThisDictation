@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from './components/Layout';
 import ContentInput from './components/ContentInput';
 import DictationSettings from './components/DictationSettings';
-import DictationPlayer from './components/DictationPlayer';
+import DictationPlayer from './components/DictationPlayer/index';
 import { DictationProvider } from './context/DictationContext';
 
 function App() {
