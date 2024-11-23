@@ -13,6 +13,11 @@ export const useDictationPlayback = () => {
 
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isPlayingRef = useRef(isPlaying);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   const getWordText = useCallback((word: string | { text: string }) => {
     return typeof word === 'string' ? word : word.text;
@@ -28,16 +33,10 @@ export const useDictationPlayback = () => {
       utterance.rate = settings.speed;
       
       utterance.onend = () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        timeoutRef.current = setTimeout(resolve, settings.interval * 100);
+        setTimeout(resolve, settings.interval * 1000);
       };
 
       utterance.onerror = () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
         resolve();
       };
 
@@ -52,7 +51,7 @@ export const useDictationPlayback = () => {
     try {
       for (let rep = 0; rep < settings.repetitions; rep++) {
         for (let i = currentWordIndex; i < wordSets.length; i++) {
-          if (!isPlaying) return;
+          if (!isPlayingRef.current) return;
           
           setCurrentWordIndex(i);
           await speakWord(getWordText(wordSets[i]));
@@ -69,7 +68,6 @@ export const useDictationPlayback = () => {
     wordSets,
     currentWordIndex,
     settings.repetitions,
-    isPlaying,
     setIsPlaying,
     setCurrentWordIndex,
     speakWord,
