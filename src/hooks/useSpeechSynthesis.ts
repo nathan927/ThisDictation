@@ -6,12 +6,14 @@ interface SpeechOptions {
   interval: number;
 }
 
-// Single source of truth for language mapping
 const LANGUAGE_MAP = {
   'English': 'en-US',
-  'Cantonese': 'zh-HK', 
+  'Cantonese': 'zh-HK',
   'Mandarin': 'zh-CN'
 } as const;
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 500;
 
 export const useSpeechSynthesis = () => {
   const { settings } = useDictation();
@@ -19,9 +21,8 @@ export const useSpeechSynthesis = () => {
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
 
-  // Load voices and handle browser differences
+  // Initialize speech synthesis
   useEffect(() => {
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
@@ -31,34 +32,36 @@ export const useSpeechSynthesis = () => {
       }
     };
 
+    // Try loading voices immediately
     loadVoices();
-    
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
 
+    // Set up voice changed listener
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // Cleanup
     return () => {
       window.speechSynthesis.onvoiceschanged = null;
     };
   }, []);
 
-  // Select appropriate voice with fallbacks
-  const getVoiceForLanguage = useCallback((pronunciation: string) => {
-    if (!voicesLoaded || voices.length === 0) return null;
+  const getVoiceForLanguage = useCallback((pronunciation: string, retryCount = 0): SpeechSynthesisVoice | null => {
+    if (!voices.length && retryCount < MAX_RETRIES) {
+      return null;
+    }
 
     const langCode = LANGUAGE_MAP[pronunciation as keyof typeof LANGUAGE_MAP];
     
-    // Try to find exact match
+    // Try exact match
     let voice = voices.find(v => v.lang === langCode);
     
-    // Fallback to partial match
+    // Try partial match
     if (!voice) {
       voice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
     }
     
-    // Final fallback to any voice
-    return voice || voices[0];
-  }, [voices, voicesLoaded]);
+    // Fallback to any voice
+    return voice || voices[0] || null;
+  }, [voices]);
 
   const cleanup = useCallback(() => {
     if (speechRef.current) {
@@ -71,66 +74,60 @@ export const useSpeechSynthesis = () => {
     }
   }, []);
 
-  useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
+  useEffect(() => cleanup, [cleanup]);
 
   const speak = useCallback(async (text: string, options: SpeechOptions): Promise<void> => {
     return new Promise((resolve, reject) => {
-      try {
-        cleanup();
-
-        // Wait for voices to load if needed
-        if (!voicesLoaded) {
-          console.warn('Voices not loaded yet, waiting...');
-          setTimeout(() => speak(text, options).then(resolve).catch(reject), 100);
-          return;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Apply settings
-        utterance.rate = options.rate;
-        utterance.volume = 1;
-        utterance.pitch = 1;
-
-        // Get appropriate voice
-        const voice = getVoiceForLanguage(settings.pronunciation);
-        if (voice) {
-          utterance.voice = voice;
-          utterance.lang = voice.lang;
-        } else {
-          console.warn('No suitable voice found, using default');
-        }
-
-        // Handle events
-        utterance.onend = () => {
-          timeoutRef.current = setTimeout(() => {
-            cleanup();
-            resolve();
-          }, options.interval * 1000);
-        };
-
-        utterance.onerror = (event) => {
-          console.error('Speech synthesis error:', event);
+      const attemptSpeak = (retryCount = 0) => {
+        try {
           cleanup();
-          reject(event);
-        };
 
-        speechRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
+          const voice = getVoiceForLanguage(settings.pronunciation, retryCount);
+          
+          if (!voice && retryCount < MAX_RETRIES) {
+            setTimeout(() => attemptSpeak(retryCount + 1), RETRY_DELAY);
+            return;
+          }
 
-      } catch (error) {
-        console.error('Speech synthesis setup error:', error);
-        cleanup();
-        reject(error);
-      }
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = options.rate;
+          utterance.volume = 1;
+          utterance.pitch = 1;
+
+          if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+          }
+
+          utterance.onend = () => {
+            timeoutRef.current = setTimeout(() => {
+              cleanup();
+              resolve();
+            }, options.interval * 1000);
+          };
+
+          utterance.onerror = (event) => {
+            console.error('Speech synthesis error:', event);
+            cleanup();
+            reject(event);
+          };
+
+          speechRef.current = utterance;
+          window.speechSynthesis.speak(utterance);
+
+        } catch (error) {
+          console.error('Speech synthesis setup error:', error);
+          cleanup();
+          reject(error);
+        }
+      };
+
+      attemptSpeak();
     });
-  }, [cleanup, getVoiceForLanguage, settings.pronunciation, voicesLoaded]);
+  }, [cleanup, getVoiceForLanguage, settings.pronunciation]);
 
   return {
     speak,
-    stop: cleanup,
-    voicesLoaded
+    stop: cleanup
   };
 };
