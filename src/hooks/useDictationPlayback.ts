@@ -1,239 +1,129 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { useDictation } from '../context/DictationContext';
 
-interface WordWithAudio {
-  text: string;
-  audioUrl?: string;
-}
-
-// Utility function to detect mobile browser
-const isMobileBrowser = () => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
-
 export const useDictationPlayback = () => {
-  const { 
-    wordSets, 
-    currentWordIndex, 
+  const {
+    wordSets,
+    currentWordIndex,
     setCurrentWordIndex,
-    isPlaying, 
-    setIsPlaying, 
-    settings 
+    isPlaying,
+    setIsPlaying,
+    settings
   } = useDictation();
 
-  const [repetitionCount, setRepetitionCount] = useState(1);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const speakingRef = useRef<boolean>(false);
+  const isMountedRef = useRef(true);
 
-  // Cleanup function to ensure proper resource release
-  const cleanup = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      stopDictation();
+    };
+  }, []);
+
+  const getWordText = useCallback((word: string | { text: string }) => {
+    return typeof word === 'string' ? word : word.text;
+  }, []);
+
+  const speakWord = useCallback((text: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!isMountedRef.current) {
+        resolve();
+        return;
+      }
+
+      if (speechRef.current) {
+        speechSynthesis.cancel();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = settings.speed;
+      
+      utterance.onend = () => {
+        if (isMountedRef.current) {
+          timeoutRef.current = setTimeout(resolve, settings.interval * 100);
+        }
+      };
+
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        resolve();
+      };
+
+      speechRef.current = utterance;
+      try {
+        speechSynthesis.speak(utterance);
+      } catch (error) {
+        console.error('Speech synthesis failed:', error);
+        resolve();
+      }
+    });
+  }, [settings.speed, settings.interval]);
+
+  const playDictation = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
+    setIsPlaying(true);
+    
+    try {
+      for (let rep = 0; rep < settings.repetitions; rep++) {
+        for (let i = currentWordIndex; i < wordSets.length; i++) {
+          if (!isPlaying || !isMountedRef.current) return;
+          
+          setCurrentWordIndex(i);
+          await speakWord(getWordText(wordSets[i]));
+        }
+        
+        if (rep < settings.repetitions - 1) {
+          setCurrentWordIndex(0);
+        }
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsPlaying(false);
+      }
     }
-    if (utteranceRef.current && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      utteranceRef.current = null;
+  }, [
+    wordSets,
+    currentWordIndex,
+    settings.repetitions,
+    isPlaying,
+    setCurrentWordIndex,
+    speakWord,
+    getWordText
+  ]);
+
+  const stopDictation = useCallback(() => {
+    if (speechRef.current) {
+      speechSynthesis.cancel();
+      speechRef.current = null;
     }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    speakingRef.current = false;
-  };
-
-  const playAudio = (audioUrl: string): Promise<void> => {
-    return new Promise((resolve) => {
-      cleanup();
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.onended = () => {
-        resolve();
-      };
-      audioRef.current.play();
-    });
-  };
-
-  const speakWord = async (word: string | WordWithAudio) => {
-    // Handle audio URL if present
-    if (typeof word === 'object' && 'audioUrl' in word && word.audioUrl) {
-      return playAudio(word.audioUrl);
-    }
-
-    // Check if speech synthesis is available
-    if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not available');
-      return Promise.reject(new Error('Speech synthesis not available'));
-    }
-
-    // Ensure clean state
-    cleanup();
-
-    return new Promise<void>((resolve) => {
-      const text = typeof word === 'string' ? word : word.text;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utteranceRef.current = utterance;
-
-      // Configure language
-      switch (settings.pronunciation) {
-        case 'Cantonese':
-          utterance.lang = 'zh-HK';
-          break;
-        case 'Mandarin':
-          utterance.lang = 'zh-CN';
-          break;
-        default:
-          utterance.lang = 'en-US';
-      }
-
-      utterance.rate = settings.speed;
-
-      // Track completion state
-      let completed = false;
-      const completeSpeak = () => {
-        if (completed) return;
-        completed = true;
-        cleanup();
-        resolve();
-      };
-
-      // Set up event handlers
-      utterance.onend = completeSpeak;
-      utterance.onerror = () => {
-        console.error('Speech synthesis error');
-        completeSpeak();
-      };
-
-      // Start speaking
-      speakingRef.current = true;
-      window.speechSynthesis.speak(utterance);
-
-      // Backup completion check
-      const checkInterval = setInterval(() => {
-        if (!window.speechSynthesis.speaking && speakingRef.current) {
-          clearInterval(checkInterval);
-          completeSpeak();
-        }
-      }, 50);
-
-      // Ensure speech synthesis stays active
-      const keepAlive = setInterval(() => {
-        if (speakingRef.current && window.speechSynthesis.speaking) {
-          window.speechSynthesis.pause();
-          window.speechSynthesis.resume();
-        } else {
-          clearInterval(keepAlive);
-        }
-      }, 250);
-
-      // Cleanup intervals after maximum duration
-      const maxDuration = Math.max(2000, text.length * 200);
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        clearInterval(keepAlive);
-        if (speakingRef.current) {
-          completeSpeak();
-        }
-      }, maxDuration);
-    });
-  };
-
-  const playCurrentWord = async () => {
-    if (!isPlaying || wordSets.length === 0) return;
-
-    const currentWord = wordSets[currentWordIndex];
-    if (!currentWord) return;
-
-    try {
-      for (let i = 0; i < settings.repetitions; i++) {
-        if (!isPlaying) break;
-        await speakWord(currentWord);
-        if (i < settings.repetitions - 1 && isPlaying) {
-          await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
-        }
-      }
-
-      if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        timeoutRef.current = setTimeout(() => {
-          setCurrentWordIndex(currentWordIndex + 1);
-        }, settings.interval * 1000);
-      } else if (currentWordIndex === wordSets.length - 1) {
-        setIsPlaying(false);
-      }
-    } catch (error) {
-      console.error('Error playing word:', error);
-      cleanup();
-      if (isPlaying && currentWordIndex < wordSets.length - 1) {
-        setCurrentWordIndex(currentWordIndex + 1);
-      }
-    }
-  };
-
-  // Handle visibility changes
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        cleanup();
-      } else if (isPlaying) {
-        playCurrentWord();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      cleanup();
-    };
-  }, [isPlaying]);
-
-  // Handle playback state changes
-  useEffect(() => {
-    if (isPlaying) {
-      playCurrentWord();
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [currentWordIndex, isPlaying]);
-
-  const playDictation = () => {
-    if (wordSets.length === 0) return;
-    
-    // Check if speech synthesis is available
-    if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not available');
-      return;
-    }
-
-    setIsPlaying(true);
-  };
-
-  const stopDictation = () => {
-    cleanup();
     setIsPlaying(false);
-  };
+  }, []);
 
-  const nextWord = () => {
+  const nextWord = useCallback(() => {
     if (currentWordIndex < wordSets.length - 1) {
-      cleanup();
+      stopDictation();
       setCurrentWordIndex(currentWordIndex + 1);
     }
-  };
+  }, [currentWordIndex, wordSets.length, stopDictation]);
 
-  const previousWord = () => {
+  const previousWord = useCallback(() => {
     if (currentWordIndex > 0) {
-      cleanup();
+      stopDictation();
       setCurrentWordIndex(currentWordIndex - 1);
     }
-  };
+  }, [currentWordIndex, stopDictation]);
 
   return {
     playDictation,
     stopDictation,
     nextWord,
-    previousWord,
-    repetitionCount
+    previousWord
   };
 };
