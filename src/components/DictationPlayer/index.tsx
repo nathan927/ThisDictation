@@ -119,10 +119,6 @@ const DictationPlayer: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <div className="w-full text-center mt-4 text-xs text-red-500 sm:absolute sm:bottom-2 sm:left-2 sm:text-left sm:w-auto">
-        {t('Please click "Play" twice in the first time.')}
-      </div>
     </div>
   );
 };

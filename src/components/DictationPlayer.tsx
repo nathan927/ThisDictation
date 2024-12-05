@@ -80,39 +80,14 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
-  const playWord = async (index: number) => {
-    if (index >= wordSets.length) {
-      setIsPlaying(false);
-      return;
-    }
-
-    try {
-      setCurrentWordIndex(index);
-      await speak(wordSets[index].text);
-      
-      // Add a small delay between words
-      setTimeout(() => {
-        // Continue with next word if still playing
-        if (isPlaying) {
-          playWord(index + 1);
-        }
-      }, 1000); // 1 second delay between words
-    } catch (error) {
-      console.error('Error playing word:', error);
-      setIsPlaying(false);
-    }
-  };
-
   const handlePlay = () => {
     setIsPlaying(true);
-    // Start from current word index or restart if at end
-    const startIndex = currentWordIndex >= wordSets.length ? 0 : currentWordIndex;
-    playWord(startIndex);
+    playDictation();
   };
 
   const handleStop = () => {
     setIsPlaying(false);
-    setCurrentWordIndex(0);
+    stopDictation();
   };
 
   return (
@@ -188,10 +163,6 @@ const DictationPlayer: React.FC = () => {
             {t('Delete All')}
           </button>
         </div>
-      </div>
-
-      <div className="w-full text-center mt-4 text-xs text-red-500 sm:absolute sm:bottom-2 sm:left-2 sm:text-left sm:w-auto">
-        {t('Please click "Play" twice in the first time.')}
       </div>
     </div>
   );

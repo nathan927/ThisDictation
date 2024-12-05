@@ -14,66 +14,100 @@ export const useDictationController = () => {
   
   const { speak, stop } = useSpeechSynthesis();
   const isPlayingRef = useRef(isPlaying);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Keep isPlayingRef in sync with isPlaying state
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  const cleanup = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    stop();
+  }, [stop]);
+
+  // Cleanup on unmount
+  useEffect(() => cleanup, [cleanup]);
 
   const getWordText = useCallback((word: string | { text: string }) => {
     return typeof word === 'string' ? word : word.text;
   }, []);
 
-  const playDictation = useCallback(async () => {
-    setIsPlaying(true);
-    
+  const playWord = useCallback(async (index: number, currentRepetition: number = 0) => {
+    if (!isPlayingRef.current || index >= wordSets.length) {
+      setIsPlaying(false);
+      return;
+    }
+
+    setCurrentWordIndex(index);
+    const word = wordSets[index];
+
     try {
-      for (let rep = 0; rep < settings.repetitions; rep++) {
-        for (let i = currentWordIndex; i < wordSets.length; i++) {
-          if (!isPlayingRef.current) return;
-          
-          setCurrentWordIndex(i);
-          await speak(getWordText(wordSets[i]), {
-            rate: settings.speed,
-            interval: settings.interval
-          });
-        }
-        
-        if (rep < settings.repetitions - 1) {
-          setCurrentWordIndex(0);
-        }
+      // Speak current word
+      await speak(getWordText(word), {
+        rate: settings.speed,
+        interval: settings.interval
+      });
+
+      // If we haven't finished repeating the current word
+      if (currentRepetition < settings.repetitions - 1) {
+        timeoutRef.current = setTimeout(() => {
+          playWord(index, currentRepetition + 1);
+        }, settings.interval * 1000);
+        return;
       }
+
+      // Move to next word after interval
+      timeoutRef.current = setTimeout(() => {
+        if (isPlayingRef.current) {
+          if (index < wordSets.length - 1) {
+            playWord(index + 1, 0);
+          } else {
+            setIsPlaying(false);
+          }
+        }
+      }, settings.interval * 1000);
+
     } catch (error) {
-      console.error('Dictation playback error:', error);
-    } finally {
+      console.error('Error playing word:', error);
       setIsPlaying(false);
     }
-  }, [
-    wordSets,
-    currentWordIndex,
-    settings,
-    setCurrentWordIndex,
-    setIsPlaying,
-    speak
-  ]);
+  }, [wordSets, settings, speak, getWordText, setCurrentWordIndex, setIsPlaying]);
+
+  const playDictation = useCallback(() => {
+    if (!wordSets.length) return;
+    
+    cleanup();
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    playWord(currentWordIndex);
+  }, [wordSets, currentWordIndex, cleanup, setIsPlaying, playWord]);
 
   const stopDictation = useCallback(() => {
-    stop();
+    cleanup();
     setIsPlaying(false);
-  }, [stop, setIsPlaying]);
+  }, [cleanup, setIsPlaying]);
 
   const nextWord = useCallback(() => {
     if (currentWordIndex < wordSets.length - 1) {
       stopDictation();
       setCurrentWordIndex(currentWordIndex + 1);
+      // Auto-play after moving to next word
+      setTimeout(() => playDictation(), 100); // Small delay to ensure state is updated
     }
-  }, [currentWordIndex, wordSets.length, stopDictation, setCurrentWordIndex]);
+  }, [currentWordIndex, wordSets.length, stopDictation, setCurrentWordIndex, playDictation]);
 
   const previousWord = useCallback(() => {
     if (currentWordIndex > 0) {
       stopDictation();
       setCurrentWordIndex(currentWordIndex - 1);
+      // Auto-play after moving to previous word
+      setTimeout(() => playDictation(), 100); // Small delay to ensure state is updated
     }
-  }, [currentWordIndex, stopDictation, setCurrentWordIndex]);
+  }, [currentWordIndex, stopDictation, setCurrentWordIndex, playDictation]);
 
   return {
     playDictation,

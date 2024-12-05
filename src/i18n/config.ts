@@ -62,7 +62,6 @@ const resources = {
       'Processing...': 'Processing...',
       'Recognized text will appear here...': 'Recognized text will appear here...',
       'Please provide the words': 'Please provide the words',
-      'Please click "Play" twice in the first time.': 'Please click "Play" twice in the first time.',
       'Take Photo': 'Take Photo',
       'Select a file': 'Select a file'
     }
@@ -130,7 +129,6 @@ const resources = {
       'No response from OCR service': 'OCR服務無回應',
       'Request timed out': '請求超時，請重試',
       'Please provide the words': '請提供詞組',
-      'Please click "Play" twice in the first time.': '第一次使用時請按兩次「播放」。',
       'Take Photo': '拍照片',
       'Select a file': '選擇檔案'
     }
@@ -199,7 +197,6 @@ const resources = {
       'No response from OCR service': 'OCR服务无响应',
       'Request timed out': '请求超时，请重试',
       'Please provide the words': '请提供词组',
-      'Please click "Play" twice in the first time.': '第一次使用时请按两次「播放」。',
       'Take Photo': '拍照片',
       'Select a file': '选择文件'
     }

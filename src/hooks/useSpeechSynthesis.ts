@@ -1,133 +1,97 @@
-import { useCallback, useRef, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDictation } from '../context/DictationContext';
 
-interface SpeechOptions {
-  rate: number;
-  interval: number;
+interface SpeakOptions {
+  rate?: number;
+  interval?: number;
 }
-
-const LANGUAGE_MAP = {
-  'English': 'en-US',
-  'Cantonese': 'zh-HK',
-  'Mandarin': 'zh-CN'
-} as const;
-
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 500;
 
 export const useSpeechSynthesis = () => {
   const { settings } = useDictation();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
-  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const synthesisRef = useRef(window.speechSynthesis);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Initialize speech synthesis
+  // Load and update voices when available
   useEffect(() => {
     const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
+      const availableVoices = synthesisRef.current.getVoices();
       if (availableVoices.length > 0) {
         setVoices(availableVoices);
-        setVoicesLoaded(true);
       }
     };
 
-    // Try loading voices immediately
     loadVoices();
-
-    // Set up voice changed listener
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
-    // Cleanup
+    synthesisRef.current.addEventListener('voiceschanged', loadVoices);
+    
     return () => {
-      window.speechSynthesis.onvoiceschanged = null;
+      synthesisRef.current.removeEventListener('voiceschanged', loadVoices);
     };
   }, []);
 
-  const getVoiceForLanguage = useCallback((pronunciation: string, retryCount = 0): SpeechSynthesisVoice | null => {
-    if (!voices.length && retryCount < MAX_RETRIES) {
-      return null;
-    }
-
-    const langCode = LANGUAGE_MAP[pronunciation as keyof typeof LANGUAGE_MAP];
-    
-    // Try exact match
-    let voice = voices.find(v => v.lang === langCode);
-    
-    // Try partial match
-    if (!voice) {
-      voice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
-    }
-    
-    // Fallback to any voice
-    return voice || voices[0] || null;
+  // Get appropriate voice based on language
+  const getVoice = useCallback((language: string) => {
+    const languageCode = language.toLowerCase();
+    return voices.find(voice => 
+      voice.lang.toLowerCase().startsWith(languageCode) ||
+      voice.lang.toLowerCase() === languageCode
+    ) || voices.find(voice => voice.default) || voices[0];
   }, [voices]);
 
-  const cleanup = useCallback(() => {
-    if (speechRef.current) {
-      window.speechSynthesis.cancel();
-      speechRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+  const stop = useCallback(() => {
+    synthesisRef.current.cancel();
+    if (utteranceRef.current) {
+      utteranceRef.current = null;
     }
   }, []);
 
-  useEffect(() => cleanup, [cleanup]);
+  const speak = useCallback(async (text: string, options: SpeakOptions = {}) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        stop();
 
-  const speak = useCallback(async (text: string, options: SpeechOptions): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const attemptSpeak = (retryCount = 0) => {
-        try {
-          cleanup();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
 
-          const voice = getVoiceForLanguage(settings.pronunciation, retryCount);
-          
-          if (!voice && retryCount < MAX_RETRIES) {
-            setTimeout(() => attemptSpeak(retryCount + 1), RETRY_DELAY);
-            return;
+        // Configure utterance
+        utterance.voice = getVoice(settings.language);
+        utterance.rate = options.rate || 1;
+        utterance.lang = settings.language;
+
+        // Handle events
+        utterance.onend = () => {
+          utteranceRef.current = null;
+          resolve();
+        };
+
+        utterance.onerror = (event) => {
+          console.error('Speech synthesis error:', event);
+          utteranceRef.current = null;
+          reject(new Error('Speech synthesis failed'));
+        };
+
+        synthesisRef.current.speak(utterance);
+
+        // Workaround for some browsers that might not trigger onend
+        const maxTimeout = (text.length * 100) + 1000; // Rough estimate
+        setTimeout(() => {
+          if (utteranceRef.current === utterance) {
+            utteranceRef.current = null;
+            resolve();
           }
+        }, maxTimeout);
 
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = options.rate;
-          utterance.volume = 1;
-          utterance.pitch = 1;
-
-          if (voice) {
-            utterance.voice = voice;
-            utterance.lang = voice.lang;
-          }
-
-          utterance.onend = () => {
-            timeoutRef.current = setTimeout(() => {
-              cleanup();
-              resolve();
-            }, options.interval * 1000);
-          };
-
-          utterance.onerror = (event) => {
-            console.error('Speech synthesis error:', event);
-            cleanup();
-            reject(event);
-          };
-
-          speechRef.current = utterance;
-          window.speechSynthesis.speak(utterance);
-
-        } catch (error) {
-          console.error('Speech synthesis setup error:', error);
-          cleanup();
-          reject(error);
-        }
-      };
-
-      attemptSpeak();
+      } catch (error) {
+        console.error('Speech synthesis setup error:', error);
+        reject(error);
+      }
     });
-  }, [cleanup, getVoiceForLanguage, settings.pronunciation]);
+  }, [getVoice, settings.language, stop]);
 
   return {
     speak,
-    stop: cleanup
+    stop,
+    voices,
+    isSupported: 'speechSynthesis' in window
   };
 };
