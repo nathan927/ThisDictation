@@ -38,6 +38,10 @@ export const useSpeechSynthesis = () => {
     ) || voices.find(voice => voice.default) || voices[0];
   }, [voices]);
 
+  const getLanguageCode = useCallback((pronunciation: string) => {
+    return pronunciation.split('-')[0];
+  }, []);
+
   const stop = useCallback(() => {
     synthesisRef.current.cancel();
     if (utteranceRef.current) {
@@ -54,9 +58,9 @@ export const useSpeechSynthesis = () => {
         utteranceRef.current = utterance;
 
         // Configure utterance
-        utterance.voice = getVoice(settings.language);
+        utterance.voice = getVoice(settings.pronunciation);
         utterance.rate = options.rate || 1;
-        utterance.lang = settings.language;
+        utterance.lang = getLanguageCode(settings.pronunciation);
 
         // Handle events
         utterance.onend = () => {
@@ -86,7 +90,7 @@ export const useSpeechSynthesis = () => {
         reject(error);
       }
     });
-  }, [getVoice, settings.language, stop]);
+  }, [getVoice, getLanguageCode, settings.pronunciation, stop]);
 
   return {
     speak,

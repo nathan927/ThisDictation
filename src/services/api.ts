@@ -8,8 +8,8 @@ interface Window {
 
 declare global {
   interface Window {
-    SpeechRecognition: new () => any;
-    webkitSpeechRecognition: new () => any;
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
   }
 }
 

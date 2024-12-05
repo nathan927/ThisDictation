@@ -1,4 +1,5 @@
 interface Window {
+  SpeechRecognition: typeof SpeechRecognition;
   webkitSpeechRecognition: typeof SpeechRecognition;
 }
 
@@ -40,3 +41,22 @@ interface SpeechRecognitionAlternative {
   transcript: string;
   confidence: number;
 }
+
+interface DictationSettings {
+  speed: number;
+  interval: number;
+  repetitions: number;
+  pronunciation: string;
+}
+
+interface SpeakOptions {
+  rate?: number;
+  interval?: number;
+}
+
+interface WordWithAudio {
+  text: string;
+  audioUrl: string;
+}
+
+export type { DictationSettings, SpeakOptions, WordWithAudio };
