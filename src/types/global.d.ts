@@ -15,8 +15,8 @@ declare class SpeechRecognition extends EventTarget {
 }
 
 interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
+  error: 'not-allowed' | 'audio-capture' | 'network' | 'no-speech' | 'aborted' | 'language-not-supported' | 'service-not-allowed' | 'bad-grammar';
+  message?: string;
 }
 
 interface SpeechRecognitionEvent extends Event {
@@ -34,7 +34,7 @@ interface SpeechRecognitionResult {
   length: number;
   item(index: number): SpeechRecognitionAlternative;
   [index: number]: SpeechRecognitionAlternative;
-  isFinal: boolean;
+  isFinal?: boolean;
 }
 
 interface SpeechRecognitionAlternative {

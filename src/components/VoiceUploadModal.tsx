@@ -44,59 +44,115 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   const startRecognition = () => {
     try {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        throw new Error('Speech recognition is not supported in this browser');
+      const isChrome = /Chrome/i.test(navigator.userAgent);
+      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      
+      // Check for browser support
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        throw new Error(t('Speech recognition is not supported in this browser'));
       }
 
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
+
+      // Configure recognition settings
+      recognition.continuous = false; // Set to false for better mobile compatibility
+      recognition.interimResults = false; // Disable interim results on mobile
+      recognition.maxAlternatives = 1;
       recognition.lang = getLanguageCode(settings.pronunciation);
 
-      // For mobile Chrome, we need to handle the recognition differently
-      if (isMobile && /Chrome/i.test(navigator.userAgent)) {
-        recognition.continuous = false; // Mobile Chrome doesn't support continuous mode well
-        recognition.interimResults = false; // Disable interim results for better stability
+      // Add specific mobile handling
+      if (isMobile) {
+        // Request microphone permission explicitly
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(() => {
+            console.log('Microphone permission granted');
+          })
+          .catch((err) => {
+            console.error('Microphone permission error:', err);
+            setRecognitionError(t('Please grant microphone permission and try again'));
+            setIsRecognizing(false);
+            return;
+          });
       }
 
+      let finalTranscript = '';
+
       recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join(' ');
-        setWordSetInput(prev => {
-          const lines = prev.split('\n');
-          lines[lines.length - 1] = transcript;
-          return lines.join('\n');
-        });
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        // Update the input with the final transcript
+        if (finalTranscript !== '') {
+          setWordSetInput(prev => {
+            const lines = prev.split('\n');
+            lines[lines.length - 1] = finalTranscript.trim();
+            return lines.join('\n');
+          });
+          finalTranscript = ''; // Reset for next recognition
+        }
       };
 
       recognition.onerror = (event) => {
         console.error('Recognition error:', event.error);
-        // Handle specific mobile Chrome errors
-        if (event.error === 'not-allowed' && isMobile) {
-          setRecognitionError('Please grant microphone permission and try again');
-        } else {
-          setRecognitionError(`Recognition error: ${event.error}`);
+        let errorMessage = '';
+        
+        switch (event.error) {
+          case 'not-allowed':
+            errorMessage = t('Microphone access was denied. Please allow microphone access and try again.');
+            break;
+          case 'no-speech':
+            errorMessage = t('No speech was detected. Please try again.');
+            break;
+          case 'network':
+            errorMessage = t('Network error occurred. Please check your internet connection.');
+            break;
+          default:
+            errorMessage = `${t('Recognition error')}: ${event.error}`;
         }
+        
+        setRecognitionError(errorMessage);
         setIsRecognizing(false);
       };
 
       recognition.onend = () => {
         setIsRecognizing(false);
-        // Auto restart recognition for mobile Chrome
-        if (isMobile && /Chrome/i.test(navigator.userAgent) && recognitionRef.current) {
-          recognitionRef.current.start();
+        if (recognitionRef.current) {
+          // Don't auto-restart on mobile to prevent excessive battery usage
+          if (!isMobile) {
+            try {
+              recognitionRef.current.start();
+            } catch (error) {
+              console.error('Error restarting recognition:', error);
+            }
+          }
         }
       };
 
-      recognition.start();
-      recognitionRef.current = recognition;
-      setIsRecognizing(true);
-      setRecognitionError('');
+      // Start recognition
+      try {
+        recognition.start();
+        recognitionRef.current = recognition;
+        setIsRecognizing(true);
+        setRecognitionError('');
+      } catch (error) {
+        console.error('Error starting recognition:', error);
+        setRecognitionError(t('Failed to start speech recognition. Please try again.'));
+        setIsRecognizing(false);
+      }
+
     } catch (error) {
-      console.error('Error starting recognition:', error);
-      setRecognitionError(error instanceof Error ? error.message : 'Failed to start recognition');
+      console.error('Speech recognition setup error:', error);
+      setRecognitionError(error instanceof Error ? error.message : t('Failed to initialize speech recognition'));
+      setIsRecognizing(false);
     }
   };
 
