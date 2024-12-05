@@ -43,6 +43,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
 
   const startRecognition = () => {
     try {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         throw new Error('Speech recognition is not supported in this browser');
@@ -52,6 +53,12 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = getLanguageCode(settings.pronunciation);
+
+      // For mobile Chrome, we need to handle the recognition differently
+      if (isMobile && /Chrome/i.test(navigator.userAgent)) {
+        recognition.continuous = false; // Mobile Chrome doesn't support continuous mode well
+        recognition.interimResults = false; // Disable interim results for better stability
+      }
 
       recognition.onresult = (event) => {
         const transcript = Array.from(event.results)
@@ -66,12 +73,21 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
 
       recognition.onerror = (event) => {
         console.error('Recognition error:', event.error);
-        setRecognitionError(`Recognition error: ${event.error}`);
+        // Handle specific mobile Chrome errors
+        if (event.error === 'not-allowed' && isMobile) {
+          setRecognitionError('Please grant microphone permission and try again');
+        } else {
+          setRecognitionError(`Recognition error: ${event.error}`);
+        }
         setIsRecognizing(false);
       };
 
       recognition.onend = () => {
         setIsRecognizing(false);
+        // Auto restart recognition for mobile Chrome
+        if (isMobile && /Chrome/i.test(navigator.userAgent) && recognitionRef.current) {
+          recognitionRef.current.start();
+        }
       };
 
       recognition.start();

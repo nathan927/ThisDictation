@@ -64,12 +64,7 @@ export const useDictationPlayback = () => {
     utterance.rate = settings.speed;
 
     return new Promise<void>((resolve) => {
-      utterance.onend = () => {
-        if (isPlaying) { // Only resolve if still playing
-          resolve();
-        }
-      };
-      utterance.onerror = () => resolve(); // Resolve on error to prevent hanging
+      utterance.onend = () => resolve();
       window.speechSynthesis.speak(utterance);
     });
   };
@@ -80,30 +75,17 @@ export const useDictationPlayback = () => {
     const currentWord = wordSets[currentWordIndex];
     if (!currentWord) return;
 
-    let repetition = 0;
-    while (isPlaying && repetition < settings.repetitions) {
+    for (let i = 0; i < settings.repetitions; i++) {
+      if (!isPlaying) break;
       await speakWord(currentWord);
-      repetition++;
-      
-      // Break if stopped or last repetition
-      if (!isPlaying || repetition >= settings.repetitions) break;
-      
-      // Wait for interval
-      await new Promise<void>((resolve) => {
-        timeoutRef.current = setTimeout(() => {
-          if (isPlaying) { // Only resolve if still playing
-            resolve();
-          }
-        }, settings.interval * 1000);
-      });
+      if (i < settings.repetitions - 1) {
+        await new Promise(resolve => setTimeout(resolve, settings.interval * 1000));
+      }
     }
 
-    // Move to next word if still playing and not last word
     if (isPlaying && currentWordIndex < wordSets.length - 1) {
       timeoutRef.current = setTimeout(() => {
-        if (isPlaying) { // Only proceed if still playing
-          setCurrentWordIndex(currentWordIndex + 1);
-        }
+        setCurrentWordIndex(currentWordIndex + 1);
       }, settings.interval * 1000);
     } else if (currentWordIndex === wordSets.length - 1) {
       setIsPlaying(false);
@@ -118,7 +100,6 @@ export const useDictationPlayback = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      window.speechSynthesis.cancel(); // Ensure speech is cancelled on cleanup
     };
   }, [currentWordIndex, isPlaying]);
 
@@ -129,15 +110,14 @@ export const useDictationPlayback = () => {
   };
 
   const stopDictation = () => {
-    setIsPlaying(false); // Set this first to prevent new utterances
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
     window.speechSynthesis.cancel();
+    setIsPlaying(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
     }
   };
 

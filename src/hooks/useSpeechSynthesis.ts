@@ -29,22 +29,12 @@ export const useSpeechSynthesis = () => {
     };
   }, []);
 
-  // Get appropriate voice based on pronunciation
-  const getVoice = useCallback((pronunciation: string) => {
-    let languageCode: string;
-    switch (pronunciation) {
-      case 'Cantonese':
-        languageCode = 'zh-HK';
-        break;
-      case 'Mandarin':
-        languageCode = 'zh-CN';
-        break;
-      default:
-        languageCode = 'en-US';
-    }
+  // Get appropriate voice based on language
+  const getVoice = useCallback((language: string) => {
+    const languageCode = language.toLowerCase();
     return voices.find(voice => 
-      voice.lang.toLowerCase().startsWith(languageCode.toLowerCase()) ||
-      voice.lang.toLowerCase() === languageCode.toLowerCase()
+      voice.lang.toLowerCase().startsWith(languageCode) ||
+      voice.lang.toLowerCase() === languageCode
     ) || voices.find(voice => voice.default) || voices[0];
   }, [voices]);
 
@@ -64,20 +54,9 @@ export const useSpeechSynthesis = () => {
         utteranceRef.current = utterance;
 
         // Configure utterance
-        utterance.voice = getVoice(settings.pronunciation);
+        utterance.voice = getVoice(settings.language);
         utterance.rate = options.rate || 1;
-        
-        // Set language based on pronunciation
-        switch (settings.pronunciation) {
-          case 'Cantonese':
-            utterance.lang = 'zh-HK';
-            break;
-          case 'Mandarin':
-            utterance.lang = 'zh-CN';
-            break;
-          default:
-            utterance.lang = 'en-US';
-        }
+        utterance.lang = settings.language;
 
         // Handle events
         utterance.onend = () => {
@@ -107,7 +86,7 @@ export const useSpeechSynthesis = () => {
         reject(error);
       }
     });
-  }, [getVoice, settings.pronunciation, stop]);
+  }, [getVoice, settings.language, stop]);
 
   return {
     speak,

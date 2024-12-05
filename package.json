@@ -19,6 +19,8 @@
     "@tailwindcss/forms": "^0.5.7",
     "axios": "^1.6.5",
     "i18next": "^23.7.16",
+    "microsoft-cognitiveservices-speech-sdk": "^1.41.0",
+    "openai": "^4.75.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^14.0.0",
