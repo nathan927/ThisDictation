@@ -1,15 +1,10 @@
 import axios from 'axios';
 
 // Add these type declarations at the top of the file
-interface Window {
-  SpeechRecognition: any;
-  webkitSpeechRecognition: any;
-}
-
 declare global {
   interface Window {
-    SpeechRecognition: new () => any;
-    webkitSpeechRecognition: new () => any;
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
   }
 }
 

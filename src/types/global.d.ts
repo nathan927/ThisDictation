@@ -11,6 +11,7 @@ declare class SpeechRecognition extends EventTarget {
   abort(): void;
   onerror: (event: SpeechRecognitionErrorEvent) => void;
   onresult: (event: SpeechRecognitionEvent) => void;
+  onend: (event: Event) => void;
 }
 
 interface SpeechRecognitionErrorEvent extends Event {

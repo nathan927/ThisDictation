@@ -7,6 +7,7 @@ interface DictationSettings {
   interval: number;
   speed: number;
   pronunciation: string;
+  language: string;
 }
 
 interface Word {
@@ -37,7 +38,8 @@ export const DictationContext = createContext<DictationContextType>({
     repetitions: 3,
     interval: 2,
     speed: 1,
-    pronunciation: 'English'
+    pronunciation: 'English',
+    language: 'English'
   },
   snackbarOpen: false,
   setWordSets: () => {},
@@ -71,14 +73,16 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     repetitions: 3,
     interval: 2,
     speed: 1,
-    pronunciation: getDefaultPronunciation()
+    pronunciation: getDefaultPronunciation(),
+    language: i18n.language
   });
 
   // Update pronunciation when language changes
   useEffect(() => {
     setSettings(prev => ({
       ...prev,
-      pronunciation: getDefaultPronunciation()
+      pronunciation: getDefaultPronunciation(),
+      language: i18n.language
     }));
   }, [i18n.language]);
 
