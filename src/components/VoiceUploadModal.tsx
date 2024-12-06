@@ -179,6 +179,26 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
     onClose();
   };
 
+  const handleSave = async () => {
+    const words = wordSetInput
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    if (words.length === 1 && mediaBlobUrl) {
+      const response = await fetch(mediaBlobUrl);
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      setWordSets(prevWords => [...prevWords, { 
+        text: words[0],
+        audioUrl: audioUrl
+      }]);
+    } else {
+      setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
+    }
+    handleClose();
+  };
+
   React.useEffect(() => {
     return () => {
       if (recognitionRef.current) {
@@ -209,7 +229,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
           
           <div className="flex flex-col gap-4">
             {isMobile ? (
-              // Mobile Interface - Combined Recording and Speech
+              // Mobile Interface - Speech Input Only
               <div className="flex flex-col gap-4">
                 {mediaBlobUrl && (
                   <audio src={mediaBlobUrl} controls className="w-full mb-4" />
@@ -221,16 +241,6 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                   className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
                 />
                 <div className="flex flex-col gap-3">
-                  <button
-                    onClick={handleRecordingToggle}
-                    className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
-                      isRecording 
-                        ? 'bg-red-500 hover:bg-red-600' 
-                        : 'bg-green-500 hover:bg-green-600'
-                    } text-white`}
-                  >
-                    {isRecording ? t('Stop Recording') : t('Start Recording')}
-                  </button>
                   <button
                     onClick={() => {
                       if (usingSpeechInput) {
@@ -244,33 +254,15 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
                       usingSpeechInput
                         ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-blue-500 hover:bg-blue-600'
-                    } text-white`}
+                        : 'bg-purple-600 hover:bg-purple-700'
+                    } text-white shadow-lg`}
                   >
                     {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
-                {!isRecording && !usingSpeechInput && wordSetInput.trim() && (
+                {!usingSpeechInput && wordSetInput.trim() && (
                   <button
-                    onClick={async () => {
-                      const words = wordSetInput
-                        .split('\n')
-                        .map(line => line.trim())
-                        .filter(line => line.length > 0);
-                      
-                      if (words.length === 1 && mediaBlobUrl) {
-                        const response = await fetch(mediaBlobUrl);
-                        const blob = await response.blob();
-                        const audioUrl = URL.createObjectURL(blob);
-                        setWordSets(prevWords => [...prevWords, { 
-                          text: words[0],
-                          audioUrl: audioUrl
-                        }]);
-                      } else {
-                        setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
-                      }
-                      handleClose();
-                    }}
+                    onClick={handleSave}
                     className="w-full py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
                   >
                     {t('Confirm')}
@@ -281,7 +273,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
               // Desktop Interface - Unchanged
               <>
                 {mediaBlobUrl && !isRecording ? (
-                  <>
+                  <div>
                     <audio src={mediaBlobUrl} controls className="w-full mb-4" />
                     <div className="flex gap-3 flex-col">
                       <textarea
@@ -326,25 +318,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                         </button>
                         {wordSetInput.trim() && (
                           <button
-                            onClick={async () => {
-                              const words = wordSetInput
-                                .split('\n')
-                                .map(line => line.trim())
-                                .filter(line => line.length > 0);
-                              
-                              if (words.length === 1 && mediaBlobUrl) {
-                                const response = await fetch(mediaBlobUrl);
-                                const blob = await response.blob();
-                                const audioUrl = URL.createObjectURL(blob);
-                                setWordSets(prevWords => [...prevWords, { 
-                                  text: words[0],
-                                  audioUrl: audioUrl
-                                }]);
-                              } else {
-                                setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
-                              }
-                              handleClose();
-                            }}
+                            onClick={handleSave}
                             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium"
                           >
                             {t('Confirm')}
@@ -352,7 +326,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                         )}
                       </div>
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-4">
                     {isRecording ? (
