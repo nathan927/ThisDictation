@@ -20,6 +20,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   const [recognitionError, setRecognitionError] = useState<string>('');
   const [usingSpeechInput, setUsingSpeechInput] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const currentRecognition = useRef<any>(null);
 
   const {
     status,
@@ -103,55 +104,46 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const startRecognition = () => {
-    if (isMobile) {
-      startMobileSpeechRecognition();
-      return;
-    }
-
-    try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        setRecognitionError(t('Speech recognition is not supported in this browser'));
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
+    if (!isMobile && 'webkitSpeechRecognition' in window) {
+      const recognition = new (window as any).webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = getLanguageCode(settings.pronunciation);
+      recognition.lang = ''; // Empty string enables auto-detection
+      recognition.maxAlternatives = 1;
 
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join(' ');
-        setWordSetInput(prev => {
-          const lines = prev.split('\n');
-          lines[lines.length - 1] = transcript;
-          return lines.join('\n');
-        });
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Recognition error:', event.error);
-        if (event.error === 'not-allowed') {
-          setRecognitionError(t('Please allow microphone access to use speech recognition'));
-        } else {
-          setRecognitionError(t('Recognition error: ') + event.error);
-        }
-        setIsRecognizing(false);
+      recognition.onstart = () => {
+        setUsingSpeechInput(true);
+        setRecognitionError('');
       };
 
       recognition.onend = () => {
-        setIsRecognizing(false);
+        if (usingSpeechInput) {
+          recognition.start();
+        }
       };
 
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setRecognitionError(t('Speech recognition error: ') + event.error);
+        setUsingSpeechInput(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        const result = event.results[event.results.length - 1];
+        if (result.isFinal) {
+          const transcript = result[0].transcript.trim();
+          if (transcript) {
+            setWordSetInput(prev => {
+              const words = prev.split('\n').filter(word => word.trim());
+              words.push(transcript);
+              return words.join('\n');
+            });
+          }
+        }
+      };
+
+      currentRecognition.current = recognition;
       recognition.start();
-      recognitionRef.current = recognition;
-      setIsRecognizing(true);
-      setRecognitionError('');
-    } catch (error) {
-      console.error('Error starting recognition:', error);
-      setRecognitionError(error instanceof Error ? error.message : t('Failed to start recognition'));
     }
   };
 
@@ -164,11 +156,11 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const stopRecognition = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
+    if (!isMobile && currentRecognition.current) {
+      currentRecognition.current.stop();
+      currentRecognition.current = null;
     }
-    setIsRecognizing(false);
+    setUsingSpeechInput(false);
   };
 
   const handleRecordingToggle = async () => {
@@ -254,7 +246,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                         stopRecognition();
                       } else {
                         setUsingSpeechInput(true);
-                        startRecognition();
+                        startMobileSpeechRecognition();
                       }
                     }}
                     className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
@@ -290,102 +282,59 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                 </div>
               </div>
             ) : (
-              // Desktop Interface - Unchanged
-              <>
-                {mediaBlobUrl && !isRecording ? (
-                  <div>
-                    <audio src={mediaBlobUrl} controls className="w-full mb-4" />
-                    <div className="flex gap-3 flex-col">
-                      <textarea
-                        value={wordSetInput}
-                        onChange={(e) => setWordSetInput(e.target.value)}
-                        placeholder={t('Enter words to practice (one per line)')}
-                        className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                      />
-                      <button
-                        onClick={() => {
-                          if (usingSpeechInput) {
-                            setUsingSpeechInput(false);
-                            stopRecognition();
-                          } else {
-                            setUsingSpeechInput(true);
-                            startRecognition();
-                          }
-                        }}
-                        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
-                      >
-                        {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
-                      </button>
-                    </div>
+              // Desktop Interface - Combined View
+              <div className="space-y-6">
+                <button
+                  onClick={() => {
+                    if (isRecording || usingSpeechInput) {
+                      stopRecognition();
+                      setUsingSpeechInput(false);
+                      handleRecordingToggle();
+                    } else {
+                      setUsingSpeechInput(true);
+                      startRecognition();
+                      handleRecordingToggle();
+                    }
+                  }}
+                  className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
+                    isRecording || usingSpeechInput
+                      ? 'bg-red-500 hover:bg-red-600' 
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white shadow-lg`}
+                >
+                  {isRecording || usingSpeechInput ? t('Stop Recording') : t('Start Recording')}
+                </button>
 
-                    <div className="flex justify-between gap-3">
-                      <button
-                        onClick={() => {
-                          clearBlobUrl();
-                          setWordSetInput('');
-                          setRecognitionError('');
-                        }}
-                        className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-base font-medium"
-                      >
-                        {t('Record Again')}
-                      </button>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={handleClose}
-                          className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
-                        >
-                          {t('Cancel')}
-                        </button>
-                        {wordSetInput.trim() && (
-                          <button
-                            onClick={handleSave}
-                            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium"
-                          >
-                            {t('Confirm')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    {isRecording ? (
-                      <button
-                        onClick={handleRecordingToggle}
-                        className="w-full py-4 rounded-lg text-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
-                      >
-                        {t('Stop Recording')}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleRecordingToggle}
-                        className="w-full py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
-                      >
-                        {t('Start Recording')}
-                      </button>
-                    )}
-                    
-                    {!isRecording && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">
-                            {t('Pronunciation')}
-                          </label>
-                          <select
-                            value={settings.pronunciation}
-                            onChange={(e) => setSettings({ ...settings, pronunciation: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                          >
-                            <option value="Cantonese">{t('Cantonese')}</option>
-                            <option value="Mandarin">{t('Mandarin')}</option>
-                            <option value="English">{t('English')}</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                {mediaBlobUrl && (
+                  <audio src={mediaBlobUrl} controls className="w-full" />
                 )}
-              </>
+
+                <div className="flex flex-col gap-4">
+                  <textarea
+                    value={wordSetInput}
+                    onChange={(e) => setWordSetInput(e.target.value)}
+                    placeholder={t('Enter words to practice (one per line)')}
+                    className="flex-1 border rounded-lg p-4 h-32 text-base resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-4">
+                  <button
+                    onClick={handleClose}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium shadow-md"
+                  >
+                    {t('Cancel')}
+                  </button>
+                  {wordSetInput.trim() && (
+                    <button
+                      onClick={handleSave}
+                      className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 text-base font-medium shadow-md"
+                    >
+                      {t('Confirm')}
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </Dialog.Panel>
