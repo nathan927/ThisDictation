@@ -249,7 +249,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                 <textarea
                   value={wordSetInput}
                   onChange={(e) => setWordSetInput(e.target.value)}
-                  placeholder={t('Enter words to practice (one per line)')}
+                  placeholder={t('One Word Per Line. You can keep using speech input to add more words.')}
                   className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
                 />
                 <div className="flex flex-col gap-3">
