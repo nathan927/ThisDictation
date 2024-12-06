@@ -241,17 +241,11 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
           
           <div className="flex flex-col gap-4">
             {isMobile ? (
-              // Mobile Interface - Speech Input Only
+              // Mobile Interface - Speech Input First
               <div className="flex flex-col gap-4">
                 {mediaBlobUrl && (
                   <audio src={mediaBlobUrl} controls className="w-full mb-4" />
                 )}
-                <textarea
-                  value={wordSetInput}
-                  onChange={(e) => setWordSetInput(e.target.value)}
-                  placeholder={t('One Word Per Line. You can keep using speech input to add more words.')}
-                  className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                />
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => {
@@ -272,6 +266,12 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
+                <textarea
+                  value={wordSetInput}
+                  onChange={(e) => setWordSetInput(e.target.value)}
+                  placeholder={t('One Word Per Line. You can keep using speech input to add more words.')}
+                  className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
+                />
                 <div className="flex gap-3">
                   <button
                     onClick={handleClose}
