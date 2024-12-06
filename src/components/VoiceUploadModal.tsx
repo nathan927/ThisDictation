@@ -214,8 +214,8 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white p-6">
+      <div className="fixed inset-0 flex items-center justify-center p-2">
+        <Dialog.Panel className="mx-auto w-[95%] rounded-lg bg-white p-4 min-h-[80vh]">
           <Dialog.Title className="text-xl font-medium mb-4 text-center">
             {t('Voice Upload')}
           </Dialog.Title>
@@ -309,12 +309,12 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                   <audio src={mediaBlobUrl} controls className="w-full" />
                 )}
 
-                <div className="flex flex-col gap-4 mt-4">
+                <div className="flex flex-col gap-4 mt-4 h-[60vh]">
                   <textarea
                     value={wordSetInput}
                     onChange={(e) => setWordSetInput(e.target.value)}
                     placeholder={t('Enter words to practice (one per line)')}
-                    className="w-full border rounded-lg p-4 h-[40rem] text-base resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border rounded-lg p-4 h-full text-base resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
