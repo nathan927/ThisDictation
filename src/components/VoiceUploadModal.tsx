@@ -208,16 +208,29 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
           )}
           
           <div className="flex flex-col gap-4">
-            {mediaBlobUrl && !isRecording ? (
-              <>
-                <audio src={mediaBlobUrl} controls className="w-full mb-4" />
-                <div className="flex gap-3 flex-col">
-                  <textarea
-                    value={wordSetInput}
-                    onChange={(e) => setWordSetInput(e.target.value)}
-                    placeholder={t('Enter words to practice (one per line)')}
-                    className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                  />
+            {isMobile ? (
+              // Mobile Interface - Combined Recording and Speech
+              <div className="flex flex-col gap-4">
+                {mediaBlobUrl && (
+                  <audio src={mediaBlobUrl} controls className="w-full mb-4" />
+                )}
+                <textarea
+                  value={wordSetInput}
+                  onChange={(e) => setWordSetInput(e.target.value)}
+                  placeholder={t('Enter words to practice (one per line)')}
+                  className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
+                />
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleRecordingToggle}
+                    className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
+                      isRecording 
+                        ? 'bg-red-500 hover:bg-red-600' 
+                        : 'bg-green-500 hover:bg-green-600'
+                    } text-white`}
+                  >
+                    {isRecording ? t('Stop Recording') : t('Start Recording')}
+                  </button>
                   <button
                     onClick={() => {
                       if (usingSpeechInput) {
@@ -228,102 +241,157 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                         startRecognition();
                       }
                     }}
-                    className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
+                    className={`w-full py-4 rounded-lg text-xl font-medium transition-colors ${
+                      usingSpeechInput
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                    } text-white`}
                   >
                     {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
-
-                <div className="flex justify-between gap-3">
+                {!isRecording && !usingSpeechInput && wordSetInput.trim() && (
                   <button
-                    onClick={() => {
-                      clearBlobUrl();
-                      setWordSetInput('');
-                      setRecognitionError('');
+                    onClick={async () => {
+                      const words = wordSetInput
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+                      
+                      if (words.length === 1 && mediaBlobUrl) {
+                        const response = await fetch(mediaBlobUrl);
+                        const blob = await response.blob();
+                        const audioUrl = URL.createObjectURL(blob);
+                        setWordSets(prevWords => [...prevWords, { 
+                          text: words[0],
+                          audioUrl: audioUrl
+                        }]);
+                      } else {
+                        setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
+                      }
+                      handleClose();
                     }}
-                    className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-base font-medium"
-                  >
-                    {t('Record Again')}
-                  </button>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleClose}
-                      className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
-                    >
-                      {t('Cancel')}
-                    </button>
-                    {wordSetInput.trim() && (
-                      <button
-                        onClick={async () => {
-                          const words = wordSetInput
-                            .split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line.length > 0);
-                          
-                          // Create a single word with audio if there's only one word
-                          if (words.length === 1 && mediaBlobUrl) {
-                            // Convert blob URL to actual blob
-                            const response = await fetch(mediaBlobUrl);
-                            const blob = await response.blob();
-                            
-                            // Create object URL for storage
-                            const audioUrl = URL.createObjectURL(blob);
-                            
-                            setWordSets(prevWords => [...prevWords, { 
-                              text: words[0],
-                              audioUrl: audioUrl
-                            }]);
-                          } else {
-                            // Multiple words - add without audio
-                            setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
-                          }
-                          handleClose();
-                        }}
-                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium"
-                      >
-                        {t('Confirm')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {isRecording ? (
-                  <button
-                    onClick={handleRecordingToggle}
-                    className="w-full py-4 rounded-lg text-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
-                  >
-                    {t('Stop Recording')}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleRecordingToggle}
                     className="w-full py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
                   >
-                    {t('Start Recording')}
+                    {t('Confirm')}
                   </button>
                 )}
-                
-                {!isRecording && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t('Pronunciation')}
-                      </label>
-                      <select
-                        value={settings.pronunciation}
-                        onChange={(e) => setSettings({ ...settings, pronunciation: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              </div>
+            ) : (
+              // Desktop Interface - Unchanged
+              <>
+                {mediaBlobUrl && !isRecording ? (
+                  <>
+                    <audio src={mediaBlobUrl} controls className="w-full mb-4" />
+                    <div className="flex gap-3 flex-col">
+                      <textarea
+                        value={wordSetInput}
+                        onChange={(e) => setWordSetInput(e.target.value)}
+                        placeholder={t('Enter words to practice (one per line)')}
+                        className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
+                      />
+                      <button
+                        onClick={() => {
+                          if (usingSpeechInput) {
+                            setUsingSpeechInput(false);
+                            stopRecognition();
+                          } else {
+                            setUsingSpeechInput(true);
+                            startRecognition();
+                          }
+                        }}
+                        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
                       >
-                        <option value="Cantonese">{t('Cantonese')}</option>
-                        <option value="Mandarin">{t('Mandarin')}</option>
-                        <option value="English">{t('English')}</option>
-                      </select>
+                        {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
+                      </button>
                     </div>
+
+                    <div className="flex justify-between gap-3">
+                      <button
+                        onClick={() => {
+                          clearBlobUrl();
+                          setWordSetInput('');
+                          setRecognitionError('');
+                        }}
+                        className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-base font-medium"
+                      >
+                        {t('Record Again')}
+                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleClose}
+                          className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
+                        >
+                          {t('Cancel')}
+                        </button>
+                        {wordSetInput.trim() && (
+                          <button
+                            onClick={async () => {
+                              const words = wordSetInput
+                                .split('\n')
+                                .map(line => line.trim())
+                                .filter(line => line.length > 0);
+                              
+                              if (words.length === 1 && mediaBlobUrl) {
+                                const response = await fetch(mediaBlobUrl);
+                                const blob = await response.blob();
+                                const audioUrl = URL.createObjectURL(blob);
+                                setWordSets(prevWords => [...prevWords, { 
+                                  text: words[0],
+                                  audioUrl: audioUrl
+                                }]);
+                              } else {
+                                setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
+                              }
+                              handleClose();
+                            }}
+                            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium"
+                          >
+                            {t('Confirm')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {isRecording ? (
+                      <button
+                        onClick={handleRecordingToggle}
+                        className="w-full py-4 rounded-lg text-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
+                      >
+                        {t('Stop Recording')}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleRecordingToggle}
+                        className="w-full py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
+                      >
+                        {t('Start Recording')}
+                      </button>
+                    )}
+                    
+                    {!isRecording && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            {t('Pronunciation')}
+                          </label>
+                          <select
+                            value={settings.pronunciation}
+                            onChange={(e) => setSettings({ ...settings, pronunciation: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          >
+                            <option value="Cantonese">{t('Cantonese')}</option>
+                            <option value="Mandarin">{t('Mandarin')}</option>
+                            <option value="English">{t('English')}</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </Dialog.Panel>
