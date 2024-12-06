@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Snackbar from '../components/Snackbar';
 
 interface DictationSettings {
   repetitions: number;
@@ -18,12 +19,14 @@ interface DictationContextType {
   currentWordIndex: number;
   isPlaying: boolean;
   settings: DictationSettings;
+  snackbarOpen: boolean;
   setWordSets: React.Dispatch<React.SetStateAction<Word[]>>;
   deleteWord: (index: number) => void;
   deleteAllWords: () => void;
   setCurrentWordIndex: (index: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setSettings: (settings: DictationSettings) => void;
+  closeSnackbar: () => void;
 }
 
 export const DictationContext = createContext<DictationContextType>({
@@ -36,19 +39,22 @@ export const DictationContext = createContext<DictationContextType>({
     speed: 1,
     pronunciation: 'English'
   },
+  snackbarOpen: false,
   setWordSets: () => {},
   deleteWord: () => {},
   deleteAllWords: () => {},
   setCurrentWordIndex: () => {},
   setIsPlaying: () => {},
-  setSettings: () => {}
+  setSettings: () => {},
+  closeSnackbar: () => {}
 });
 
 export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [wordSets, setWordSets] = useState<Word[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const getDefaultPronunciation = () => {
     switch (i18n.language) {
@@ -84,22 +90,37 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setWordSets([]);
   };
 
-  const value = {
-    wordSets,
-    currentWordIndex,
-    isPlaying,
-    settings,
-    setWordSets: setWordSets,
-    deleteWord,
-    deleteAllWords,
-    setCurrentWordIndex,
-    setIsPlaying,
-    setSettings
+  const closeSnackbar = () => setSnackbarOpen(false);
+
+  const wrappedSetWordSets = (newWordSets: React.SetStateAction<Word[]>) => {
+    setWordSets(newWordSets);
+    setSnackbarOpen(true);
   };
 
   return (
-    <DictationContext.Provider value={value}>
+    <DictationContext.Provider
+      value={{
+        wordSets,
+        currentWordIndex,
+        isPlaying,
+        settings,
+        snackbarOpen,
+        setWordSets: wrappedSetWordSets,
+        deleteWord,
+        deleteAllWords,
+        setCurrentWordIndex,
+        setIsPlaying,
+        setSettings,
+        closeSnackbar
+      }}
+    >
       {children}
+      <Snackbar
+        message={t('Update Successful')}
+        isOpen={snackbarOpen}
+        onClose={closeSnackbar}
+        duration={2000}
+      />
     </DictationContext.Provider>
   );
 };

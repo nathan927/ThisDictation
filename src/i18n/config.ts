@@ -71,6 +71,8 @@ const resources = {
       'You can edit the transcribed text here or directly input the words you said': 'You can edit the transcribed text here or directly input the words you said',
       'Record Only': 'Record Only',
       'Record with Recognition': 'Record with Recognition',
+      'Speech Recognition is only provided in PC version.': 'Speech Recognition is only provided in PC version.',
+      'Update Successful': 'Update Successful',
     }
   },
   'zh-TW': {
@@ -146,6 +148,8 @@ const resources = {
       'You can edit the transcribed text here or directly input the words you said': '您可以在此編輯轉錄的文字或直接輸入您說的內容',
       'Record Only': '只錄音',
       'Record with Recognition': '錄音並識別',
+      'Speech Recognition is only provided in PC version.': '語音辨識功能僅支援電腦版本。',
+      'Update Successfully': '更新成功',
     }
   },
   'zh-CN': {
@@ -221,6 +225,8 @@ const resources = {
       'You can edit the transcribed text here or directly input the words you said': '您可以在此编辑转录的文字或直接输入您说的内容',
       'Record Only': '只录音',
       'Record with Recognition': '录音并识别',
+      'Speech Recognition is only provided in PC version.': '语音识别功能仅支持电脑版本。',
+      'Update Successful': '更新成功',
     }
   }
 };
