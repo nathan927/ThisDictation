@@ -272,14 +272,22 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
-                {!usingSpeechInput && wordSetInput.trim() && (
+                <div className="flex gap-3">
                   <button
-                    onClick={handleSave}
-                    className="w-full py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
+                    onClick={handleClose}
+                    className="flex-1 py-4 rounded-lg text-xl font-medium bg-gray-500 hover:bg-gray-600 text-white transition-colors"
                   >
-                    {t('Confirm')}
+                    {t('Cancel')}
                   </button>
-                )}
+                  {!usingSpeechInput && wordSetInput.trim() && (
+                    <button
+                      onClick={handleSave}
+                      className="flex-1 py-4 rounded-lg text-xl font-medium bg-green-500 hover:bg-green-600 text-white transition-colors"
+                    >
+                      {t('Confirm')}
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               // Desktop Interface - Unchanged
