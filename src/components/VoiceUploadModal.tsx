@@ -18,6 +18,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   const [wordSetInput, setWordSetInput] = useState('');
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognitionError, setRecognitionError] = useState<string>('');
+  const [usingSpeechInput, setUsingSpeechInput] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const {
@@ -44,6 +45,12 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const startRecognition = () => {
+    if (isMobile) {
+      // Use speech input type for mobile
+      setUsingSpeechInput(true);
+      return;
+    }
+
     try {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -52,41 +59,25 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       }
 
       const recognition = new SpeechRecognition();
-      if (isMobile) {
-        recognition.continuous = false;
-        recognition.interimResults = false;
-      } else {
-        recognition.continuous = true;
-        recognition.interimResults = true;
-      }
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = getLanguageCode(settings.pronunciation);
 
       recognition.onresult = (event) => {
         const transcript = Array.from(event.results)
           .map(result => result[0].transcript)
           .join(' ');
-        
         setWordSetInput(prev => {
-          if (isMobile) {
-            return prev + (prev ? '\n' : '') + transcript;
-          } else {
-            const lines = prev.split('\n');
-            lines[lines.length - 1] = transcript;
-            return lines.join('\n');
-          }
+          const lines = prev.split('\n');
+          lines[lines.length - 1] = transcript;
+          return lines.join('\n');
         });
-
-        if (isMobile && isRecognizing) {
-          recognition.start();
-        }
       };
 
       recognition.onerror = (event) => {
         console.error('Recognition error:', event.error);
         if (event.error === 'not-allowed') {
           setRecognitionError(t('Please allow microphone access to use speech recognition'));
-        } else if (event.error === 'network') {
-          setRecognitionError(t('Network error occurred. Please check your connection'));
         } else {
           setRecognitionError(t('Recognition error: ') + event.error);
         }
@@ -94,9 +85,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       };
 
       recognition.onend = () => {
-        if (!isMobile || !isRecognizing) {
-          setIsRecognizing(false);
-        }
+        setIsRecognizing(false);
       };
 
       recognition.start();
@@ -107,6 +96,14 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       console.error('Error starting recognition:', error);
       setRecognitionError(error instanceof Error ? error.message : t('Failed to start recognition'));
     }
+  };
+
+  const handleSpeechInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    if (text) {
+      setWordSetInput(prev => prev + (prev ? '\n' : '') + text);
+    }
+    setUsingSpeechInput(false);
   };
 
   const stopRecognition = () => {
@@ -169,13 +166,30 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
             {mediaBlobUrl && !isRecording ? (
               <>
                 <audio src={mediaBlobUrl} controls className="w-full mb-4" />
-                <div className="flex gap-3">
-                  <textarea
-                    value={wordSetInput}
-                    onChange={(e) => setWordSetInput(e.target.value)}
-                    placeholder={t('Enter words to practice (one per line)')}
-                    className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                  />
+                <div className="flex gap-3 flex-col">
+                  {usingSpeechInput ? (
+                    <input
+                      type="text"
+                      onChange={handleSpeechInputChange}
+                      className="flex-1 border rounded-lg p-3 text-base"
+                      x-webkit-speech
+                      speech
+                      onWebkitSpeechChange={handleSpeechInputChange}
+                    />
+                  ) : (
+                    <textarea
+                      value={wordSetInput}
+                      onChange={(e) => setWordSetInput(e.target.value)}
+                      placeholder={t('Enter words to practice (one per line)')}
+                      className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
+                    />
+                  )}
+                  <button
+                    onClick={() => setUsingSpeechInput(!usingSpeechInput)}
+                    className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
+                  >
+                    {usingSpeechInput ? t('Switch to Text Input') : t('Switch to Speech Input')}
+                  </button>
                 </div>
 
                 <div className="flex justify-between gap-3">
