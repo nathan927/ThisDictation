@@ -168,12 +168,29 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     </button>
                     {wordSetInput.trim() && (
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           const words = wordSetInput
                             .split('\n')
                             .map(line => line.trim())
                             .filter(line => line.length > 0);
-                          setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
+                          
+                          // Create a single word with audio if there's only one word
+                          if (words.length === 1 && mediaBlobUrl) {
+                            // Convert blob URL to actual blob
+                            const response = await fetch(mediaBlobUrl);
+                            const blob = await response.blob();
+                            
+                            // Create object URL for storage
+                            const audioUrl = URL.createObjectURL(blob);
+                            
+                            setWordSets(prevWords => [...prevWords, { 
+                              text: words[0],
+                              audioUrl: audioUrl
+                            }]);
+                          } else {
+                            // Multiple words - add without audio
+                            setWordSets(prevWords => [...prevWords, ...words.map(text => ({ text }))]);
+                          }
                           handleClose();
                         }}
                         className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium"

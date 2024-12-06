@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
@@ -23,6 +23,8 @@ const DictationPlayer: React.FC = () => {
   
   const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const handleDelete = () => {
     if (currentWordIndex >= 0 && currentWordIndex < wordSets.length) {
       deleteWord(currentWordIndex);
@@ -38,6 +40,39 @@ const DictationPlayer: React.FC = () => {
       setCurrentWordIndex(0);
       setIsPlaying(false);
     }
+  };
+
+  const handlePlay = () => {
+    const currentWord = wordSets[currentWordIndex];
+    if (currentWord?.audioUrl) {
+      // If we have a recorded audio, play it
+      if (audioRef.current) {
+        audioRef.current.src = currentWord.audioUrl;
+        audioRef.current.play();
+        setIsPlaying(true);
+        
+        // Move to next word when audio finishes
+        audioRef.current.onended = () => {
+          setIsPlaying(false);
+          if (currentWordIndex < wordSets.length - 1) {
+            nextWord();
+          }
+        };
+      }
+    } else {
+      // Otherwise use text-to-speech
+      setIsPlaying(true);
+      playDictation();
+    }
+  };
+
+  const handleStop = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    stopDictation();
   };
 
   const ProgressBar: React.FC = () => {
@@ -80,18 +115,20 @@ const DictationPlayer: React.FC = () => {
     return typeof word === 'string' ? word : word.text;
   };
 
-  const handlePlay = () => {
-    setIsPlaying(true);
-    playDictation();
-  };
-
-  const handleStop = () => {
-    setIsPlaying(false);
-    stopDictation();
-  };
+  // Cleanup audio URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      wordSets.forEach(word => {
+        if (word.audioUrl) {
+          URL.revokeObjectURL(word.audioUrl);
+        }
+      });
+    };
+  }, []);
 
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl p-6 relative backdrop-blur-sm border border-white/20">
+      <audio ref={audioRef} className="hidden" />
       <div className="absolute top-4 right-6 text-lg font-bold text-gray-700">
         {wordSets.length > 0 ? 
           `${Math.min(currentWordIndex + 1, wordSets.length)} ${t('of')} ${wordSets.length} ${t('word(s)')}` : 
