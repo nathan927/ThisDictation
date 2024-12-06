@@ -45,7 +45,8 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
     try {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        throw new Error('Speech recognition is not supported in this browser');
+        setRecognitionError(t('Speech recognition is not supported in this browser'));
+        return;
       }
 
       const recognition = new SpeechRecognition();
@@ -66,7 +67,11 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
 
       recognition.onerror = (event) => {
         console.error('Recognition error:', event.error);
-        setRecognitionError(`Recognition error: ${event.error}`);
+        if (event.error === 'not-allowed') {
+          setRecognitionError(t('Please allow microphone access to use speech recognition'));
+        } else {
+          setRecognitionError(t('Recognition error: ') + event.error);
+        }
         setIsRecognizing(false);
       };
 
@@ -80,7 +85,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       setRecognitionError('');
     } catch (error) {
       console.error('Error starting recognition:', error);
-      setRecognitionError(error instanceof Error ? error.message : 'Failed to start recognition');
+      setRecognitionError(error instanceof Error ? error.message : t('Failed to start recognition'));
     }
   };
 
@@ -130,9 +135,14 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
           </Dialog.Title>
           
           {recognitionError && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            <p className="text-red-500 text-xs mt-4 text-center">
               {recognitionError}
-            </div>
+            </p>
+          )}
+          {!window.SpeechRecognition && !window.webkitSpeechRecognition && (
+            <p className="text-red-500 text-xs mt-4 text-center">
+              {t('Speech Recognition is not supported in this browser')}
+            </p>
           )}
           
           <div className="flex flex-col gap-4">
@@ -240,9 +250,6 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
               </div>
             )}
           </div>
-          <p className="text-red-500 text-xs mt-4 text-center">
-            {t('Speech Recognition is only provided in PC version.')}
-          </p>
         </Dialog.Panel>
       </div>
     </Dialog>
