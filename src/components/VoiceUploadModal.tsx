@@ -44,10 +44,55 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
     }
   };
 
+  const startMobileSpeechRecognition = () => {
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        setRecognitionError(t('Speech recognition is not supported in this browser'));
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = getLanguageCode(settings.pronunciation);
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setWordSetInput(prev => prev + (prev ? '\n' : '') + transcript);
+        setUsingSpeechInput(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          setRecognitionError(t('Please allow microphone access to use speech recognition'));
+        } else {
+          setRecognitionError(t('Recognition error: ') + event.error);
+        }
+        setIsRecognizing(false);
+        setUsingSpeechInput(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecognizing(false);
+        setUsingSpeechInput(false);
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsRecognizing(true);
+      setRecognitionError('');
+    } catch (error) {
+      console.error('Error starting recognition:', error);
+      setRecognitionError(error instanceof Error ? error.message : t('Failed to start recognition'));
+      setUsingSpeechInput(false);
+    }
+  };
+
   const startRecognition = () => {
     if (isMobile) {
-      // Use speech input type for mobile
-      setUsingSpeechInput(true);
+      startMobileSpeechRecognition();
       return;
     }
 
@@ -167,28 +212,25 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
               <>
                 <audio src={mediaBlobUrl} controls className="w-full mb-4" />
                 <div className="flex gap-3 flex-col">
-                  {usingSpeechInput ? (
-                    <input
-                      type="text"
-                      onChange={handleSpeechInputChange}
-                      className="flex-1 border rounded-lg p-3 text-base"
-                      x-webkit-speech
-                      speech
-                      onWebkitSpeechChange={handleSpeechInputChange}
-                    />
-                  ) : (
-                    <textarea
-                      value={wordSetInput}
-                      onChange={(e) => setWordSetInput(e.target.value)}
-                      placeholder={t('Enter words to practice (one per line)')}
-                      className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                    />
-                  )}
+                  <textarea
+                    value={wordSetInput}
+                    onChange={(e) => setWordSetInput(e.target.value)}
+                    placeholder={t('Enter words to practice (one per line)')}
+                    className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
+                  />
                   <button
-                    onClick={() => setUsingSpeechInput(!usingSpeechInput)}
+                    onClick={() => {
+                      if (usingSpeechInput) {
+                        setUsingSpeechInput(false);
+                        stopRecognition();
+                      } else {
+                        setUsingSpeechInput(true);
+                        startRecognition();
+                      }
+                    }}
                     className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-base font-medium"
                   >
-                    {usingSpeechInput ? t('Switch to Text Input') : t('Switch to Speech Input')}
+                    {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
 
