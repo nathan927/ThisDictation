@@ -120,7 +120,7 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     >
       {children}
       <Snackbar
-        message={t('Update Successful')}
+        message={t('Update Successfully')}
         isOpen={snackbarOpen}
         onClose={closeSnackbar}
         duration={2000}

@@ -50,7 +50,7 @@ const ContentInput: React.FC = () => {
     }
   };
 
-  const buttonBaseClass = "px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-white text-center";
+  const buttonBaseClass = "px-6 py-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-white text-center";
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">

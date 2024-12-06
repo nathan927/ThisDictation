@@ -47,13 +47,13 @@ const DictationPlayer: React.FC = () => {
     return (
       <div className="mb-6 space-y-4">
         <div>
-          <div className="h-2 bg-gray-200 rounded">
+          <div className="progress-bar-bg">
             <div 
-              className="h-2 bg-blue-500 rounded transition-all duration-300" 
+              className="progress-bar-fill" 
               style={{ width: `${Math.min(100, Math.max(0, wordProgress))}%` }}
             />
           </div>
-          <div className="text-sm text-gray-500 text-center mt-1">
+          <div className="text-sm text-gray-600 text-center mt-2 font-bold">
             {t('Word Progress')}
           </div>
         </div>
@@ -91,39 +91,40 @@ const DictationPlayer: React.FC = () => {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 relative">
-      <h2 className="text-xl font-bold mb-4">{t('Dictation Player')}</h2>
+    <div className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl p-6 relative backdrop-blur-sm border border-white/20">
+      <div className="absolute top-4 right-6 text-lg font-bold text-gray-700">
+        {wordSets.length > 0 ? 
+          `${Math.min(currentWordIndex + 1, wordSets.length)} ${t('of')} ${wordSets.length} ${t('word(s)')}` : 
+          `0 ${t('of')} 0 ${t('word(s)')}`}
+      </div>
+
+      <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">{t('Dictation Player')}</h2>
       
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-2">
         <div className="mb-4">
-          <div className="text-center text-2xl font-bold mb-4">
+          <div className="text-center text-4xl font-bold mb-4 text-black">
             {wordSets[currentWordIndex] ? 
               getWordText(wordSets[currentWordIndex]) : 
               t('No words added')}
-          </div>
-          
-          <div className="text-sm text-gray-500 text-center">
-            {wordSets.length > 0 ? 
-              `${Math.min(currentWordIndex + 1, wordSets.length)} ${t('of')} ${wordSets.length} ${t('word(s)')}` : 
-              `0 ${t('of')} 0 ${t('word(s)')}`}
           </div>
         </div>
 
         <ProgressBar />
 
-        <div className="flex justify-center space-x-2">
+        <div className="button-container">
           <button
             onClick={previousWord}
-            disabled={currentWordIndex === 0 || isPlaying}
-            className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            disabled={wordSets.length === 0 || currentWordIndex === 0 || isPlaying}
+            className="player-btn previous-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('Previous')}
           </button>
           
           <button
             onClick={isPlaying ? handleStop : handlePlay}
-            className={`px-4 py-2 rounded text-white ${
-              isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+            disabled={wordSets.length === 0}
+            className={`player-btn ${
+              isPlaying ? 'stop-btn' : 'play-btn'
             }`}
           >
             {isPlaying ? t('Stop') : t('Play')}
@@ -131,18 +132,18 @@ const DictationPlayer: React.FC = () => {
           
           <button
             onClick={nextWord}
-            disabled={currentWordIndex === wordSets.length - 1 || isPlaying}
-            className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            disabled={wordSets.length === 0 || currentWordIndex === wordSets.length - 1 || isPlaying}
+            className="player-btn next-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('Next')}
           </button>
         </div>
 
-        <div className="flex justify-center space-x-2">
+        <div className="button-container">
           <button
             onClick={handleExport}
             disabled={wordSets.length === 0}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            className="action-btn export-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('Export')}
           </button>
@@ -150,7 +151,7 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDelete}
             disabled={wordSets.length === 0}
-            className="px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-300"
+            className="action-btn delete-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('Delete')}
           </button>
@@ -158,7 +159,7 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDeleteAll}
             disabled={wordSets.length === 0}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-300"
+            className="action-btn delete-all-btn disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('Delete All')}
           </button>
