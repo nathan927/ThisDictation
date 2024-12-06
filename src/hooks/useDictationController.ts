@@ -87,9 +87,17 @@ export const useDictationController = () => {
   }, [wordSets, currentWordIndex, cleanup, setIsPlaying, playWord]);
 
   const stopDictation = useCallback(() => {
-    cleanup();
+    // Clear all timeouts immediately
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    // Stop any ongoing speech
+    stop();
+    // Reset playing state
+    isPlayingRef.current = false;
     setIsPlaying(false);
-  }, [cleanup, setIsPlaying]);
+  }, [stop, setIsPlaying]);
 
   const nextWord = useCallback(() => {
     if (currentWordIndex < wordSets.length - 1) {
