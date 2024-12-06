@@ -57,6 +57,18 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       recognition.interimResults = false;
       recognition.lang = getLanguageCode(settings.pronunciation);
 
+      // Disable start and end sounds for mobile
+      if (isMobile) {
+        // @ts-ignore - This property exists but is not in the type definitions
+        recognition.soundstart = false;
+        // @ts-ignore
+        recognition.soundend = false;
+        // @ts-ignore
+        recognition.startSound = false;
+        // @ts-ignore
+        recognition.endSound = false;
+      }
+
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setWordSetInput(prev => prev + (prev ? '\n' : '') + transcript);
