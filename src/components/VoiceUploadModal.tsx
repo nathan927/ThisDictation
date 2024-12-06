@@ -30,6 +30,8 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
 
   const isRecording = status === 'recording';
 
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   const getLanguageCode = (language: string) => {
     switch (language) {
       case 'Cantonese':
@@ -50,25 +52,41 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       }
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      if (isMobile) {
+        recognition.continuous = false;
+        recognition.interimResults = false;
+      } else {
+        recognition.continuous = true;
+        recognition.interimResults = true;
+      }
       recognition.lang = getLanguageCode(settings.pronunciation);
 
       recognition.onresult = (event) => {
         const transcript = Array.from(event.results)
           .map(result => result[0].transcript)
           .join(' ');
+        
         setWordSetInput(prev => {
-          const lines = prev.split('\n');
-          lines[lines.length - 1] = transcript;
-          return lines.join('\n');
+          if (isMobile) {
+            return prev + (prev ? '\n' : '') + transcript;
+          } else {
+            const lines = prev.split('\n');
+            lines[lines.length - 1] = transcript;
+            return lines.join('\n');
+          }
         });
+
+        if (isMobile && isRecognizing) {
+          recognition.start();
+        }
       };
 
       recognition.onerror = (event) => {
         console.error('Recognition error:', event.error);
         if (event.error === 'not-allowed') {
           setRecognitionError(t('Please allow microphone access to use speech recognition'));
+        } else if (event.error === 'network') {
+          setRecognitionError(t('Network error occurred. Please check your connection'));
         } else {
           setRecognitionError(t('Recognition error: ') + event.error);
         }
@@ -76,7 +94,9 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       };
 
       recognition.onend = () => {
-        setIsRecognizing(false);
+        if (!isMobile || !isRecognizing) {
+          setIsRecognizing(false);
+        }
       };
 
       recognition.start();
