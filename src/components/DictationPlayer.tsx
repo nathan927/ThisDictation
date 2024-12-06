@@ -129,16 +129,20 @@ const DictationPlayer: React.FC = () => {
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl p-6 relative backdrop-blur-sm border border-white/20">
       <audio ref={audioRef} className="hidden" />
-      <div className="absolute top-4 right-6 text-lg font-bold text-gray-700">
-        {wordSets.length > 0 ? 
-          `${Math.min(currentWordIndex + 1, wordSets.length)} ${t('of')} ${wordSets.length} ${t('word(s)')}` : 
-          `0 ${t('of')} 0 ${t('word(s)')}`}
+      
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">
+          {t('Dictation Player')}
+        </h2>
+        <div className="text-lg font-bold text-gray-700">
+          {wordSets.length > 0 ? 
+            `${Math.min(currentWordIndex + 1, wordSets.length)} ${t('of')} ${wordSets.length} ${t('word(s)')}` : 
+            `0 ${t('of')} 0 ${t('word(s)')}`}
+        </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">{t('Dictation Player')}</h2>
-      
       <div className="flex flex-col space-y-2">
-        <div className="mb-4">
+        <div className="mb-4 mt-8">
           <div className="text-center text-4xl font-bold mb-4 text-black">
             {wordSets[currentWordIndex] ? 
               getWordText(wordSets[currentWordIndex]) : 
