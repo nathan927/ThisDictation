@@ -314,7 +314,11 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     value={wordSetInput}
                     onChange={(e) => setWordSetInput(e.target.value)}
                     placeholder={t('Enter words to practice (one per line)')}
-                    style={{ minHeight: '50vh', height: 'auto' }}
+                    style={{ 
+                      lineHeight: '2.5rem',
+                      height: 'calc(2.5rem * 10 + 1rem)', 
+                      minHeight: 'calc(2.5rem * 10 + 1rem)'
+                    }}
                     className="w-full border rounded-lg p-4 text-base resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
