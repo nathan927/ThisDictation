@@ -215,11 +215,11 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center">
-        <Dialog.Panel className="mx-auto w-[95%] rounded-lg bg-white p-4 max-h-[90vh] overflow-y-auto">
+        <Dialog.Panel className="mx-auto w-[95%] h-[80vh] rounded-lg bg-white p-4 flex flex-col">
           <Dialog.Title className="text-xl font-medium mb-4 text-center">
             {t('Voice Upload')}
           </Dialog.Title>
-          
+
           {recognitionError && (
             <p className="text-red-500 text-xs mt-4 text-center">
               {recognitionError}
@@ -231,10 +231,9 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
             </p>
           )}
           
-          <div className="flex flex-col gap-4">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {isMobile ? (
-              // Mobile Interface - Speech Input First
-              <div className="flex flex-col gap-4">
+              <div className="flex-1 flex flex-col">
                 {mediaBlobUrl && (
                   <audio src={mediaBlobUrl} controls className="w-full mb-4" />
                 )}
@@ -258,12 +257,14 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                     {usingSpeechInput ? t('Stop Speech Input') : t('Start Speech Input')}
                   </button>
                 </div>
-                <textarea
-                  value={wordSetInput}
-                  onChange={(e) => setWordSetInput(e.target.value)}
-                  placeholder={t('One Word Per Line. You can keep using speech input to add more words.')}
-                  className="flex-1 border rounded-lg p-3 h-32 text-base resize-none"
-                />
+                <div className="flex-1 flex flex-col min-h-[400px]">
+                  <textarea
+                    value={wordSetInput}
+                    onChange={(e) => setWordSetInput(e.target.value)}
+                    placeholder={t('One Word Per Line. You can keep using speech input to add more words.')}
+                    className="flex-1 w-full border rounded-lg p-4 text-lg min-h-[400px] resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
                 <div className="flex gap-3">
                   <button
                     onClick={handleClose}
@@ -282,7 +283,6 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                 </div>
               </div>
             ) : (
-              // Desktop Interface - Combined View
               <div className="space-y-6">
                 <button
                   onClick={() => {
@@ -309,17 +309,12 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
                   <audio src={mediaBlobUrl} controls className="w-full" />
                 )}
 
-                <div className="flex flex-col gap-4 mt-4">
+                <div className="flex-1 flex flex-col min-h-[400px]">
                   <textarea
                     value={wordSetInput}
                     onChange={(e) => setWordSetInput(e.target.value)}
                     placeholder={t('Enter words to practice (one per line)')}
-                    style={{ 
-                      lineHeight: '2.5rem',
-                      height: 'calc(2.5rem * 10 + 1rem)', 
-                      minHeight: 'calc(2.5rem * 10 + 1rem)'
-                    }}
-                    className="w-full border rounded-lg p-4 text-base resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 w-full border rounded-lg p-4 text-lg min-h-[400px] resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
