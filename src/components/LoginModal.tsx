@@ -34,7 +34,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     return (
         <Dialog open={isOpen} onClose={onClose} className="relative z-50">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
-            <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div className="fixed inset-0 flex items-start justify-center p-4 pt-16">
                 <Dialog.Panel className="mx-auto max-w-md w-full rounded-2xl bg-white shadow-2xl transform transition-all">
                     <div className="relative">
                         {/* Header with decorative gradient */}
@@ -43,14 +43,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                         {/* Login form */}
                         <div className="relative px-8 pt-16 pb-8">
                             {/* Welcome text */}
-                            <div className="text-center mb-8">
-                                <h2 className="text-3xl font-bold text-white mb-2">{t('Welcome back')}</h2>
+                            <div className="text-center mb-6">
+                                <h2 className="text-3xl font-bold text-white mb-1">{t('Welcome back')}</h2>
                                 <p className="text-blue-100">{t('Please enter your credentials')}</p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-                                <div className="bg-white rounded-xl p-6">
-                                    <div className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                                <div className="bg-white rounded-xl p-4">
+                                    <div className="space-y-4">
                                         {/* User ID input */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">

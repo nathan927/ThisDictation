@@ -15,8 +15,8 @@ const Header: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 sm:gap-6 mb-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center sm:text-left">
+    <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 sm:gap-6 mb-8">
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left mb-2 sm:mb-0">
         {t('ThisDictation Helper')}
       </h1>
       <div className="flex items-center gap-2 sm:gap-4">

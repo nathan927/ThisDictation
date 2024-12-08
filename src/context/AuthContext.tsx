@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import Snackbar from '../components/Snackbar';
 
 interface User {
     userId: string;
@@ -30,6 +32,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = localStorage.getItem('user');
         return storedUser ? JSON.parse(storedUser) : null;
     });
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const { t } = useTranslation();
 
     const login = (userId: string, password: string): boolean => {
         const validPassword = users[userId as keyof typeof users];
@@ -38,14 +43,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userObj = { userId };
             setUser(userObj);
             localStorage.setItem('user', JSON.stringify(userObj));
+            setSnackbarMessage(t('Login Successfully'));
+            setSnackbarOpen(true);
             return true;
         }
+        setSnackbarMessage(t('Login Failed'));
+        setSnackbarOpen(true);
         return false;
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
+        setSnackbarMessage(t('Logged out Already'));
+        setSnackbarOpen(true);
     };
 
     const value = {
@@ -58,6 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (
         <AuthContext.Provider value={value}>
             {children}
+            <Snackbar
+                isOpen={snackbarOpen}
+                message={snackbarMessage}
+                onClose={() => setSnackbarOpen(false)}
+            />
         </AuthContext.Provider>
     );
 }
