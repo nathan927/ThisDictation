@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import Snackbar from './Snackbar'; // Assuming Snackbar component is in the same directory
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -9,17 +10,17 @@ interface LoginModalProps {
     onSuccess?: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [showError, setShowError] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const { login } = useAuth();
     const { t } = useTranslation();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setShowError(false);
 
         if (login(userId, password)) {
             setUserId('');
@@ -27,7 +28,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             onSuccess?.();
             onClose();
         } else {
-            setError(t('Invalid username or password'));
+            setShowError(true);
         }
     };
 
@@ -37,6 +38,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             <div className="fixed inset-0 flex items-start justify-center p-4 pt-16">
                 <Dialog.Panel className="mx-auto max-w-md w-full rounded-2xl bg-white shadow-2xl transform transition-all">
                     <div className="relative">
+                        {/* Error Snackbar */}
+                        <Snackbar
+                            isOpen={showError}
+                            message={t('Login Failed')}
+                            onClose={() => setShowError(false)}
+                            variant="error"
+                            className="!fixed !top-24"
+                        />
                         {/* Header with decorative gradient */}
                         <div className="absolute inset-0 h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-2xl" />
                         
@@ -94,9 +103,9 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                                         </div>
 
                                         {/* Error message */}
-                                        {error && (
+                                        {showError && (
                                             <div className="text-red-500 text-sm text-center">
-                                                {error}
+                                                {t('Invalid username or password')}
                                             </div>
                                         )}
                                     </div>
@@ -126,3 +135,5 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         </Dialog>
     );
 }
+
+export default LoginModal;

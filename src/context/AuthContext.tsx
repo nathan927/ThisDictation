@@ -47,8 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setSnackbarOpen(true);
             return true;
         }
-        setSnackbarMessage(t('Login Failed'));
-        setSnackbarOpen(true);
         return false;
     };
 
