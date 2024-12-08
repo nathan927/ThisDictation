@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useDictation } from '../context/DictationContext';
 import { useDictationPlayback } from '../hooks/useDictationPlayback';
 import { speak } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from './LoginModal';
 
 interface Word {
   text: string;
@@ -20,6 +22,8 @@ const DictationPlayer: React.FC = () => {
     currentWordIndex,
     setCurrentWordIndex 
   } = useDictation();
+  const { isAuthenticated } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   const { playDictation, stopDictation, nextWord, previousWord } = useDictationPlayback();
 
@@ -42,27 +46,19 @@ const DictationPlayer: React.FC = () => {
     }
   };
 
-  const handlePlay = () => {
-    const currentWord = wordSets[currentWordIndex];
-    if (currentWord?.audioUrl) {
-      // If we have a recorded audio, play it
-      if (audioRef.current) {
-        audioRef.current.src = currentWord.audioUrl;
-        audioRef.current.play();
-        setIsPlaying(true);
-        
-        // Move to next word when audio finishes
-        audioRef.current.onended = () => {
-          setIsPlaying(false);
-          if (currentWordIndex < wordSets.length - 1) {
-            nextWord();
-          }
-        };
-      }
+  const handlePlayClick = () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    
+    if (isPlaying) {
+      setIsPlaying(false);
     } else {
-      // Otherwise use text-to-speech
       setIsPlaying(true);
-      playDictation();
+      if (currentWordIndex >= wordSets.length) {
+        setCurrentWordIndex(0);
+      }
     }
   };
 
@@ -128,6 +124,17 @@ const DictationPlayer: React.FC = () => {
 
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 shadow-lg rounded-2xl p-6 relative backdrop-blur-sm border border-white/20">
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          setShowLoginModal(false);
+          setIsPlaying(true);
+          if (currentWordIndex >= wordSets.length) {
+            setCurrentWordIndex(0);
+          }
+        }}
+      />
       <audio ref={audioRef} className="hidden" />
       
       <div className="flex justify-between items-center mb-8">
@@ -162,7 +169,7 @@ const DictationPlayer: React.FC = () => {
           </button>
           
           <button
-            onClick={isPlaying ? handleStop : handlePlay}
+            onClick={handlePlayClick}
             disabled={wordSets.length === 0}
             className={`player-btn ${
               isPlaying ? 'stop-btn' : 'play-btn'

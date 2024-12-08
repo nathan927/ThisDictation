@@ -46,21 +46,35 @@ export const useDictationController = () => {
     const word = wordSets[index];
 
     try {
+      // Check if still playing before starting speech
+      if (!isPlayingRef.current) return;
+
       // Speak current word
       await speak(getWordText(word), {
         rate: settings.speed,
         interval: settings.interval
       });
 
+      // Check if still playing after speech
+      if (!isPlayingRef.current) return;
+
       // If we haven't finished repeating the current word
       if (currentRepetition < settings.repetitions - 1) {
+        // Check if still playing before setting timeout
+        if (!isPlayingRef.current) return;
+
         timeoutRef.current = setTimeout(() => {
+          // Check if still playing before next repetition
+          if (!isPlayingRef.current) return;
           playWord(index, currentRepetition + 1);
         }, settings.interval * 1000);
         return;
       }
 
       // Move to next word after interval
+      // Check if still playing before setting timeout
+      if (!isPlayingRef.current) return;
+
       timeoutRef.current = setTimeout(() => {
         if (isPlayingRef.current) {
           if (index < wordSets.length - 1) {
@@ -87,16 +101,32 @@ export const useDictationController = () => {
   }, [wordSets, currentWordIndex, cleanup, setIsPlaying, playWord]);
 
   const stopDictation = useCallback(() => {
+    // Immediately update the playing state to prevent any new operations
+    isPlayingRef.current = false;
+    setIsPlaying(false);
+
     // Clear all timeouts immediately
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-    // Stop any ongoing speech
+
+    // Stop any ongoing speech synthesis
     stop();
-    // Reset playing state
-    isPlayingRef.current = false;
-    setIsPlaying(false);
+    window.speechSynthesis.cancel(); // Force cancel any ongoing speech
+
+    // Reset the speech synthesis state
+    window.speechSynthesis.resume(); // Ensure speech synthesis isn't paused
+    window.speechSynthesis.cancel(); // Cancel again after resume
+
+    // Clear any queued speech synthesis utterances
+    const utterances = window.speechSynthesis.getVoices();
+    if (utterances.length > 0) {
+      window.speechSynthesis.cancel();
+    }
+
+    // Reset any ongoing state
+    timeoutRef.current = null;
   }, [stop, setIsPlaying]);
 
   const nextWord = useCallback(() => {
