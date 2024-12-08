@@ -53,7 +53,10 @@ export const DictationContext = createContext<DictationContextType>({
 
 export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n, t } = useTranslation();
-  const [wordSets, setWordSets] = useState<Word[]>([]);
+  const [wordSets, setWordSets] = useState<Word[]>(() => {
+    const savedWordSets = localStorage.getItem('wordSets');
+    return savedWordSets ? JSON.parse(savedWordSets) : [];
+  });
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -87,17 +90,26 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [i18n.language]);
 
   const deleteWord = (index: number) => {
-    setWordSets(prev => prev.filter((_, i) => i !== index));
+    setWordSets(prev => {
+      const nextWordSets = prev.filter((_, i) => i !== index);
+      localStorage.setItem('wordSets', JSON.stringify(nextWordSets));
+      return nextWordSets;
+    });
   };
 
   const deleteAllWords = () => {
+    localStorage.removeItem('wordSets');
     setWordSets([]);
   };
 
   const closeSnackbar = () => setSnackbarOpen(false);
 
   const wrappedSetWordSets = (newWordSets: React.SetStateAction<Word[]>) => {
-    setWordSets(newWordSets);
+    setWordSets(prev => {
+      const nextWordSets = typeof newWordSets === 'function' ? newWordSets(prev) : newWordSets;
+      localStorage.setItem('wordSets', JSON.stringify(nextWordSets));
+      return nextWordSets;
+    });
     setSnackbarOpen(true);
   };
 
