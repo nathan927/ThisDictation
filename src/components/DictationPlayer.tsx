@@ -39,7 +39,7 @@ const DictationPlayer: React.FC = () => {
   };
 
   const handleDeleteAll = () => {
-    if (window.confirm(t('Are you sure you want to delete all words?'))) {
+    if (window.confirm(t('Warning: This will permanently delete all words. Your word sets will remain empty even after you log in again. Are you sure you want to proceed?'))) {
       deleteAllWords();
       setCurrentWordIndex(0);
       setIsPlaying(false);

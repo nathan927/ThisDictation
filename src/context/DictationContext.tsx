@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext'; 
 import Snackbar from '../components/Snackbar';
 
 interface DictationSettings {
@@ -53,8 +54,35 @@ export const DictationContext = createContext<DictationContextType>({
 
 export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n, t } = useTranslation();
+  const { user } = useAuth();
+
+  // Get user-specific storage key
+  const getUserStorageKey = () => {
+    return user ? `wordSets_${user.userId}` : 'wordSets_guest';
+  };
+
+  // Auto-save function
+  const saveToFile = (words: Word[]) => {
+    if (!user) return;
+    
+    const text = words
+      .map(word => typeof word === 'string' ? word : word.text)
+      .join('\n');
+    
+    const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
+    const fileName = `${user.userId}_wordsets_${new Date().toISOString().split('T')[0]}.txt`;
+    
+    // Save to localStorage with filename reference
+    localStorage.setItem(`${getUserStorageKey()}_backup`, JSON.stringify({
+      fileName,
+      content: text,
+      timestamp: new Date().toISOString()
+    }));
+  };
+
   const [wordSets, setWordSets] = useState<Word[]>(() => {
-    const savedWordSets = localStorage.getItem('wordSets');
+    const storageKey = getUserStorageKey();
+    const savedWordSets = localStorage.getItem(storageKey);
     return savedWordSets ? JSON.parse(savedWordSets) : [];
   });
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -89,16 +117,29 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   }, [i18n.language]);
 
+  // Update word sets when user changes
+  useEffect(() => {
+    const storageKey = getUserStorageKey();
+    const savedWordSets = localStorage.getItem(storageKey);
+    if (savedWordSets) {
+      setWordSets(JSON.parse(savedWordSets));
+    } else {
+      setWordSets([]);
+    }
+  }, [user]);
+
   const deleteWord = (index: number) => {
     setWordSets(prev => {
       const nextWordSets = prev.filter((_, i) => i !== index);
-      localStorage.setItem('wordSets', JSON.stringify(nextWordSets));
+      const storageKey = getUserStorageKey();
+      localStorage.setItem(storageKey, JSON.stringify(nextWordSets));
       return nextWordSets;
     });
   };
 
   const deleteAllWords = () => {
-    localStorage.removeItem('wordSets');
+    const storageKey = getUserStorageKey();
+    localStorage.removeItem(storageKey);
     setWordSets([]);
   };
 
@@ -107,7 +148,12 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const wrappedSetWordSets = (newWordSets: React.SetStateAction<Word[]>) => {
     setWordSets(prev => {
       const nextWordSets = typeof newWordSets === 'function' ? newWordSets(prev) : newWordSets;
-      localStorage.setItem('wordSets', JSON.stringify(nextWordSets));
+      const storageKey = getUserStorageKey();
+      localStorage.setItem(storageKey, JSON.stringify(nextWordSets));
+      
+      // Auto-save to file
+      saveToFile(nextWordSets);
+      
       return nextWordSets;
     });
     setSnackbarOpen(true);
