@@ -61,111 +61,80 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return user ? `wordSets_${user.userId}` : 'wordSets_guest';
   };
 
-  // Sync word sets with cloud storage (localStorage for now)
+  // Get user-specific storage key for cloud storage
+  const getCloudStorageKey = () => {
+    return user ? `cloud_wordSets_${user.userId}` : null;
+  };
+
+  // Sync word sets with cloud storage
   const syncWordSets = async (words: Word[]) => {
     if (!user) return;
     
-    // Store in localStorage as backup
-    const storageKey = getUserStorageKey();
-    localStorage.setItem(storageKey, JSON.stringify(words));
-    
-    try {
-      // Store in sessionStorage for cross-device sync flag
-      const syncKey = `lastSync_${user.userId}`;
-      const currentTime = new Date().toISOString();
-      sessionStorage.setItem(syncKey, currentTime);
-      
-      // Store in GitHub Gist as cross-device storage
-      const gistContent = {
-        description: `ThisDictation word sets for user ${user.userId}`,
-        files: {
-          [`wordsets_${user.userId}.json`]: {
-            content: JSON.stringify({
-              words,
-              lastUpdated: currentTime
-            })
-          }
-        }
-      };
+    const cloudKey = getCloudStorageKey();
+    if (!cloudKey) return;
 
-      // Save to a text file in the user's browser for backup
-      const text = words
-        .map(word => typeof word === 'string' ? word : word.text)
-        .join('\n');
-      
-      const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
-      const backupKey = `${getUserStorageKey()}_backup`;
-      localStorage.setItem(backupKey, JSON.stringify({
-        content: text,
-        timestamp: currentTime
-      }));
-      
-    } catch (error) {
-      console.error('Failed to sync word sets:', error);
-    }
+    const currentTime = new Date().toISOString();
+    
+    // Store in cloud storage (using localStorage as simulation)
+    const cloudData = {
+      words,
+      lastUpdated: currentTime,
+      userId: user.userId
+    };
+    
+    // Save to cloud
+    localStorage.setItem(cloudKey, JSON.stringify(cloudData));
+    
+    // Also save locally for faster access
+    const localKey = getUserStorageKey();
+    localStorage.setItem(localKey, JSON.stringify(words));
+    
+    // Save backup
+    const backupKey = `${localKey}_backup`;
+    const text = words
+      .map(word => typeof word === 'string' ? word : word.text)
+      .join('\n');
+    
+    localStorage.setItem(backupKey, JSON.stringify({
+      content: text,
+      timestamp: currentTime
+    }));
   };
 
-  // Load word sets from all available sources
+  // Load word sets from cloud storage
   const loadWordSets = async () => {
     if (!user) return [];
 
-    const storageKey = getUserStorageKey();
-    let words: Word[] = [];
+    const cloudKey = getCloudStorageKey();
+    if (!cloudKey) return [];
     
     try {
-      // Try to load from localStorage first (fastest)
-      const localData = localStorage.getItem(storageKey);
-      if (localData) {
-        words = JSON.parse(localData);
-      }
-      
-      // Check if we need to sync with cloud
-      const syncKey = `lastSync_${user.userId}`;
-      const lastSync = sessionStorage.getItem(syncKey);
-      
-      if (!lastSync) {
-        // This is a new device/session, try to load from cloud
-        try {
-          // For now, we'll use localStorage as our cloud storage simulation
-          // In a real implementation, this would be replaced with actual cloud storage API calls
-          const cloudData = localStorage.getItem(`cloud_${storageKey}`);
-          if (cloudData) {
-            const cloudWords = JSON.parse(cloudData);
-            // Use cloud data if it's newer or if we don't have local data
-            if (!localData || (cloudWords.lastUpdated > JSON.parse(localData).lastUpdated)) {
-              words = cloudWords.words;
-              // Update local storage with cloud data
-              localStorage.setItem(storageKey, JSON.stringify(words));
-            }
-          }
-        } catch (error) {
-          console.error('Failed to load from cloud:', error);
-        }
-        
-        // Mark as synced
-        sessionStorage.setItem(syncKey, new Date().toISOString());
+      // Try to load from cloud storage
+      const cloudData = localStorage.getItem(cloudKey);
+      if (cloudData) {
+        const { words } = JSON.parse(cloudData);
+        // Update local storage with cloud data
+        const localKey = getUserStorageKey();
+        localStorage.setItem(localKey, JSON.stringify(words));
+        return words;
       }
     } catch (error) {
-      console.error('Failed to load word sets:', error);
-      // Try to load from backup
-      try {
-        const backupKey = `${storageKey}_backup`;
-        const backup = localStorage.getItem(backupKey);
-        if (backup) {
-          const { content } = JSON.parse(backup);
-          words = content.split('\n').map(text => ({ text }));
-        }
-      } catch (backupError) {
-        console.error('Failed to load from backup:', backupError);
+      console.error('Failed to load from cloud:', error);
+      // Try to load from local storage as fallback
+      const localKey = getUserStorageKey();
+      const localData = localStorage.getItem(localKey);
+      if (localData) {
+        return JSON.parse(localData);
       }
     }
     
-    return words;
+    return [];
   };
 
   const [wordSets, setWordSets] = useState<Word[]>(() => {
-    const storageKey = getUserStorageKey();
-    const savedWordSets = localStorage.getItem(storageKey);
+    // Initially load from local storage for faster startup
+    const localKey = getUserStorageKey();
+    const savedWordSets = localStorage.getItem(localKey);
     return savedWordSets ? JSON.parse(savedWordSets) : [];
   });
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -200,11 +169,17 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   }, [i18n.language]);
 
-  // Update word sets when user changes
+  // Load from cloud when user changes or component mounts
   useEffect(() => {
-    loadWordSets().then(words => {
-      setWordSets(words);
-    });
+    if (user) {
+      loadWordSets().then(words => {
+        if (words && words.length > 0) {
+          setWordSets(words);
+        }
+      });
+    } else {
+      setWordSets([]);
+    }
   }, [user]);
 
   const deleteWord = (index: number) => {
@@ -216,11 +191,18 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteAllWords = () => {
-    const storageKey = getUserStorageKey();
-    localStorage.removeItem(storageKey);
-    localStorage.removeItem(`${storageKey}_backup`);
-    localStorage.removeItem(`cloud_${storageKey}`);
-    sessionStorage.removeItem(`lastSync_${user?.userId}`);
+    if (!user) return;
+
+    const localKey = getUserStorageKey();
+    const cloudKey = getCloudStorageKey();
+    
+    // Clear all storage locations
+    if (cloudKey) {
+      localStorage.removeItem(cloudKey);
+    }
+    localStorage.removeItem(localKey);
+    localStorage.removeItem(`${localKey}_backup`);
+    
     setWordSets([]);
   };
 
