@@ -55,26 +55,22 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       }
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true;  // Make it continuous
       recognition.interimResults = false;
       recognition.lang = getLanguageCode(settings.pronunciation);
 
       // Disable start and end sounds for mobile
       if (isMobile) {
-        // @ts-ignore - This property exists but is not in the type definitions
+        // @ts-ignore - These properties exist but are not in the type definitions
         recognition.soundstart = false;
-        // @ts-ignore
         recognition.soundend = false;
-        // @ts-ignore
         recognition.startSound = false;
-        // @ts-ignore
         recognition.endSound = false;
       }
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        const transcript = event.results[event.results.length - 1][0].transcript;
         setWordSetInput(prev => prev + (prev ? '\n' : '') + transcript);
-        setUsingSpeechInput(false);
       };
 
       recognition.onerror = (event) => {
@@ -89,19 +85,15 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       };
 
       recognition.onend = () => {
-        // If we're still using speech input, restart recognition
-        if (usingSpeechInput && !isStoppingRef.current) {
-          recognition.start();
-        } else {
-          setIsRecognizing(false);
-          setUsingSpeechInput(false);
-        }
+        setIsRecognizing(false);
+        setUsingSpeechInput(false);
       };
 
       recognition.start();
       recognitionRef.current = recognition;
       setIsRecognizing(true);
       setRecognitionError('');
+      setUsingSpeechInput(true);
     } catch (error) {
       console.error('Error starting recognition:', error);
       setRecognitionError(error instanceof Error ? error.message : t('Failed to start recognition'));
