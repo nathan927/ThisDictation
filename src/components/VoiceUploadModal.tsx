@@ -21,6 +21,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   const [usingSpeechInput, setUsingSpeechInput] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const currentRecognition = useRef<any>(null);
+  const isStoppingRef = useRef({ current: false });
 
   const {
     status,
@@ -88,8 +89,13 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       };
 
       recognition.onend = () => {
-        setIsRecognizing(false);
-        setUsingSpeechInput(false);
+        // If we're still using speech input, restart recognition
+        if (usingSpeechInput && !isStoppingRef.current) {
+          recognition.start();
+        } else {
+          setIsRecognizing(false);
+          setUsingSpeechInput(false);
+        }
       };
 
       recognition.start();
@@ -156,17 +162,21 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const stopRecognition = () => {
+    isStoppingRef.current = true;
     if (!isMobile && currentRecognition.current) {
       currentRecognition.current.stop();
       currentRecognition.current = null;
     }
     setUsingSpeechInput(false);
+    setTimeout(() => {
+      isStoppingRef.current = false;
+    }, 100);
   };
 
   const handleRecordingToggle = async () => {
     if (isRecording) {
       stopRecording();
-      // Do not stop recognition, allow continuous input
+      stopRecognition();
     } else {
       setWordSetInput('');
       setRecognitionError('');
@@ -176,7 +186,6 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const handleClose = () => {
-    // Only stop recognition when explicitly requested
     stopRecognition();
     clearBlobUrl();
     setWordSetInput('');
