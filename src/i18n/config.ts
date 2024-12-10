@@ -78,7 +78,6 @@ const resources = {
       'Login': 'Login',
       'Logout': 'Logout',
       'Login Successfully': 'Login Successful',
-      'Login Failed': 'Login Failed',
       'Logged out Already': 'Logged Out',
       'Login Required': 'Login Required',
       'User ID': 'User ID',
@@ -87,6 +86,7 @@ const resources = {
       'Please enter your credentials': 'Please enter your credentials',
       'Remember me': 'Remember me',
       'Welcome back': 'Welcome back',
+      'Login Failed': 'Invalid username or password. Please try again.',
     }
   },
   'zh-TW': {
@@ -176,6 +176,7 @@ const resources = {
       'Welcome back': '歡迎回來',
       'Login Successfully': '登入成功',
       'Logged out Already': '已登出',
+      'Login Failed': '登入失敗，請檢查您的帳號和密碼',
     }
   },
   'zh-CN': {
@@ -265,6 +266,7 @@ const resources = {
       'Welcome back': '欢迎回来',
       'Login Successfully': '登录成功',
       'Logged out Already': '已登出',
+      'Login Failed': '登录失败，请检查您的账号和密码',
     }
   }
 };

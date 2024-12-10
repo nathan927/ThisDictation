@@ -166,7 +166,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   const handleRecordingToggle = async () => {
     if (isRecording) {
       stopRecording();
-      stopRecognition();
+      // Do not stop recognition, allow continuous input
     } else {
       setWordSetInput('');
       setRecognitionError('');
@@ -176,6 +176,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const handleClose = () => {
+    // Only stop recognition when explicitly requested
     stopRecognition();
     clearBlobUrl();
     setWordSetInput('');
