@@ -55,7 +55,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       }
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;  // Make it continuous
+      recognition.continuous = false; // Mobile works better with continuous false
       recognition.interimResults = false;
       recognition.lang = getLanguageCode(settings.pronunciation);
 
@@ -69,7 +69,7 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
       }
 
       recognition.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript;
+        const transcript = event.results[0][0].transcript;
         setWordSetInput(prev => prev + (prev ? '\n' : '') + transcript);
       };
 
@@ -81,12 +81,16 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
           setRecognitionError(t('Recognition error: ') + event.error);
         }
         setIsRecognizing(false);
-        setUsingSpeechInput(false);
       };
 
       recognition.onend = () => {
-        setIsRecognizing(false);
-        setUsingSpeechInput(false);
+        // On mobile, we need to restart manually after each result
+        if (usingSpeechInput && !isStoppingRef.current) {
+          recognition.start();
+        } else {
+          setIsRecognizing(false);
+          setUsingSpeechInput(false);
+        }
       };
 
       recognition.start();
@@ -102,6 +106,10 @@ const VoiceUploadModal: React.FC<VoiceUploadModalProps> = ({
   };
 
   const startRecognition = () => {
+    if (isMobile) {
+      startMobileSpeechRecognition();
+      return;
+    }
     if (!isMobile && 'webkitSpeechRecognition' in window) {
       const recognition = new (window as any).webkitSpeechRecognition();
       recognition.continuous = true;
