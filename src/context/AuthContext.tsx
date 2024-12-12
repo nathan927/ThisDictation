@@ -12,14 +12,16 @@ interface AuthContextType {
 }
 
 const users = {
-    nathan: '93553459',
-    ling: '95274861',
-    jessica: '51728999',
-    mike: '60356856',
-    sam: '93478807',
-    winnie: '68985958',
-    phillip: '95566695',
-    hung: '61081182'
+    nathan: 'vip',
+    ling: 'vip',
+    jessica: 'vip',
+    mike: 'vip',
+    sam: 'vip',
+    winnie: 'vip',
+    phillip: 'vip',
+    hung: 'vip',
+    alan: 'vip',
+    danny: 'vip'
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
