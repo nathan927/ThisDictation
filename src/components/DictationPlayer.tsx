@@ -159,11 +159,11 @@ const DictationPlayer: React.FC = () => {
 
         <ProgressBar />
 
-        <div className="button-container">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <button
             onClick={previousWord}
             disabled={wordSets.length === 0 || currentWordIndex === 0 || isPlaying}
-            className="player-btn previous-btn disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-violet-400 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {t('Previous')}
           </button>
@@ -171,8 +171,10 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handlePlayClick}
             disabled={wordSets.length === 0}
-            className={`player-btn ${
-              isPlaying ? 'stop-btn' : 'play-btn'
+            className={`w-full font-bold py-2 px-4 rounded-lg transition-colors duration-200 ${
+              isPlaying 
+                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                : 'bg-emerald-500 hover:bg-emerald-600 text-white'
             }`}
           >
             {isPlaying ? t('Stop') : t('Play')}
@@ -181,17 +183,17 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={nextWord}
             disabled={wordSets.length === 0 || currentWordIndex === wordSets.length - 1 || isPlaying}
-            className="player-btn next-btn disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-violet-400 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {t('Next')}
           </button>
         </div>
 
-        <div className="button-container">
+        <div className="grid grid-cols-3 gap-4">
           <button
             onClick={handleExport}
             disabled={wordSets.length === 0}
-            className="action-btn export-btn disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {t('Export')}
           </button>
@@ -199,15 +201,15 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDelete}
             disabled={wordSets.length === 0}
-            className="action-btn delete-btn disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {t('Delete')}
           </button>
-          
+
           <button
             onClick={handleDeleteAll}
             disabled={wordSets.length === 0}
-            className="action-btn delete-all-btn disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {t('Delete All')}
           </button>
