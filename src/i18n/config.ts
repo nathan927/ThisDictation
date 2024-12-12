@@ -23,6 +23,7 @@ const resources = {
       'Delete': 'Delete',
       'Delete All': 'Delete All',
       'Export': 'Export',
+      'Cancel': 'Cancel',
       'Confirm': 'Confirm',
       'Start Recording': 'Start Recording',
       'Stop Recording': 'Stop Recording',
@@ -82,8 +83,7 @@ const resources = {
       'Invalid username or password': 'Invalid username or password',
       'Please enter your credentials': 'Please enter your credentials',
       'Remember me': 'Remember me',
-      'Welcome back': 'Welcome back',
-      'Cancel': 'Cancel'
+      'Welcome back': 'Welcome back'
     }
   },
   'zh-TW': {
@@ -171,7 +171,7 @@ const resources = {
       'Invalid username or password': '用戶名稱或密碼錯誤',
       'Please enter your credentials': '請輸入您的登入資料',
       'Remember me': '記住我',
-      'Welcome back': '歡迎回來',
+      'Welcome back': '歡迎回來'
     }
   },
   'zh-CN': {
@@ -195,6 +195,7 @@ const resources = {
       'Delete': '删除',
       'Delete All': '全部删除',
       'Export': '导出',
+      'Cancel': '取消',
       'Confirm': '确认',
       'Start Recording': '开始录音',
       'Stop Recording': '停止录音',
@@ -203,7 +204,7 @@ const resources = {
       'One Word Per Line. You can keep using speech input to add more words.': '每行一个词语。您可以继续使用语音输入添加更多词语。',
       'Recognize': '识别',
       'Language': '语言',
-      'Cantonese': '粤语',
+      'Cantonese': '广东话',
       'Mandarin': '普通话',
       'English': '英语',
       'Failed to process audio': '音频处理失败',
@@ -220,13 +221,13 @@ const resources = {
       'user_guide.introduction': 'ThisDictation 默书助手是您制作和练习默书的最佳伙伴。无论您是准备教材的老师，还是帮助孩子提升语言能力的家长，我们的工具都能让整个过程变得简单有效。',
       'user_guide.feature_1': '多种输入方式：文字、语音和图片识别',
       'user_guide.feature_2': '可自定义朗读速度和间隔时间',
-      'user_guide.feature_3': '支持多种语言（英语、粤语、普通话）',
+      'user_guide.feature_3': '支持多种语言（英语、粤语、国语）',
       'user_guide.feature_4': '逐字播放并可重复',
-      'user_guide.feature_5': '方便导出和导入词组清单，便于分享和复习',
-      'user_guide.getting_started': '开始使用时，只需在文字区域输入词组，或使用语音/图片上传。您也可以导入现有的词组清单。',
+      'user_guide.feature_5': '方便导出和导入单字清单，便于分享和复习',
+      'user_guide.getting_started': '开始使用时，只需在文字区域输入单字，或使用语音/图片上传。您也可以导入现有的单字清单。',
       'Got it!': '知道了！',
-      'Import txt file': '导入TXT檔',
-      'Select a txt file': '选择TXT檔',
+      'Import txt file': '导入TXT文件',
+      'Select a txt file': '选择TXT文件',
       'Document Language': '文件语言',
       'Traditional Chinese': '繁体中文',
       'Simplified Chinese': '简体中文',
@@ -240,7 +241,7 @@ const resources = {
       'Take Photo': '拍照片',
       'Select a file': '选择文件',
       'Number of Repetitions': '重复次数',
-      'Reading Interval': '朗读间隔',
+      'Reading Interval': '朗读间隔（秒）',
       'Upload Image': '上传图片',
       'Processing...': '处理中...',
       'Recognized text will appear here...': '识别文字将出现在这里...',
@@ -258,8 +259,7 @@ const resources = {
       'Invalid username or password': '用户名称或密码错误',
       'Please enter your credentials': '请输入您的登录信息',
       'Remember me': '记住我',
-      'Cancel': '取消',
-      'Welcome back': '欢迎回来',
+      'Welcome back': '欢迎回来'
     }
   }
 };
