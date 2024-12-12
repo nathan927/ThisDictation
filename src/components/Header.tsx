@@ -16,8 +16,8 @@ const Header: React.FC = () => {
 
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4 px-4">
-      <div className="flex-shrink-0 pt-2 pb-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-[length:200%_200%] bg-clip-text text-transparent animate-[shimmer_2s_linear_infinite] whitespace-nowrap">
+      <div className="flex-shrink-0 pt-1 pb-3">
+        <h1 className="text-3xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-[length:200%_200%] bg-clip-text text-transparent animate-[shimmer_2s_linear_infinite] whitespace-nowrap">
           {t('ThisDictation Helper')}
         </h1>
       </div>
