@@ -74,6 +74,17 @@ const resources = {
       'Record with Recognition': 'Record with Recognition',
       'Speech Recognition is only provided in PC version.': 'Speech Recognition is only provided in PC version.',
       'Update Successfully': 'Update Successfully',
+      'Login': 'Login',
+      'Logout': 'Logout',
+      'Welcome': 'Welcome',
+      'Login Required': 'Login Required',
+      'User ID': 'User ID',
+      'Password': 'Password',
+      'Invalid username or password': 'Invalid username or password',
+      'Please enter your credentials': 'Please enter your credentials',
+      'Remember me': 'Remember me',
+      'Cancel': 'Cancel',
+      'Welcome back': 'Welcome back',
     }
   },
   'zh-TW': {
@@ -152,6 +163,17 @@ const resources = {
       'Record with Recognition': '錄音並識別',
       'Speech Recognition is only provided in PC version.': '語音辨識功能僅支援電腦版本。',
       'Update Successfully': '加入詞語成功',
+      'Login': '登入',
+      'Logout': '登出',
+      'Welcome': '歡迎',
+      'Login Required': '需要登入',
+      'User ID': '用戶名稱',
+      'Password': '密碼',
+      'Invalid username or password': '用戶名稱或密碼錯誤',
+      'Please enter your credentials': '請輸入您的登入資料',
+      'Remember me': '記住我',
+      'Cancel': '取消',
+      'Welcome back': '歡迎回來',
     }
   },
   'zh-CN': {
@@ -230,6 +252,17 @@ const resources = {
       'Record with Recognition': '录音并识别',
       'Speech Recognition is only provided in PC version.': '语音识别功能仅支持电脑版本。',
       'Update Successfully': '加入词组成功',
+      'Login': '登录',
+      'Logout': '登出',
+      'Welcome': '欢迎',
+      'Login Required': '需要登录',
+      'User ID': '用户名称',
+      'Password': '密码',
+      'Invalid username or password': '用户名称或密码错误',
+      'Please enter your credentials': '请输入您的登录信息',
+      'Remember me': '记住我',
+      'Cancel': '取消',
+      'Welcome back': '欢迎回来',
     }
   }
 };

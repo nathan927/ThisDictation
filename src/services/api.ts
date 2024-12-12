@@ -212,8 +212,9 @@ export const processImage = async (formData: FormData, language: string) => {
 };
 
 // Add the speak function export
-export const speak = async (text: string): Promise<void> => {
+export const speak = async (text: string, lang: string = 'en'): Promise<void> => {
   const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang; // Set the language for the utterance
   return new Promise<void>((resolve, reject) => {
     utterance.onend = () => resolve();
     utterance.onerror = (error) => reject(error);

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import './i18n/config';
 import './styles/buttons.css';
+import './styles/animations.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 
