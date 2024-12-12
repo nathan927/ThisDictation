@@ -21,7 +21,9 @@ const users = {
     phillip: 'vip',
     hung: 'vip',
     alan: 'vip',
-    danny: 'vip'
+    danny: 'vip',
+    natalie: 'vip',
+    ryan: 'vip'
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
