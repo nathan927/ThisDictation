@@ -23,7 +23,6 @@ const resources = {
       'Delete': 'Delete',
       'Delete All': 'Delete All',
       'Export': 'Export',
-      'Cancel': 'Cancel',
       'Confirm': 'Confirm',
       'Start Recording': 'Start Recording',
       'Stop Recording': 'Stop Recording',
@@ -83,8 +82,8 @@ const resources = {
       'Invalid username or password': 'Invalid username or password',
       'Please enter your credentials': 'Please enter your credentials',
       'Remember me': 'Remember me',
-      'Cancel': 'Cancel',
       'Welcome back': 'Welcome back',
+      'Cancel': 'Cancel'
     }
   },
   'zh-TW': {
@@ -172,7 +171,6 @@ const resources = {
       'Invalid username or password': '用戶名稱或密碼錯誤',
       'Please enter your credentials': '請輸入您的登入資料',
       'Remember me': '記住我',
-      'Cancel': '取消',
       'Welcome back': '歡迎回來',
     }
   },
@@ -197,7 +195,6 @@ const resources = {
       'Delete': '删除',
       'Delete All': '全部删除',
       'Export': '导出',
-      'Cancel': '取消',
       'Confirm': '确认',
       'Start Recording': '开始录音',
       'Stop Recording': '停止录音',
