@@ -16,9 +16,9 @@ const Header: React.FC = () => {
 
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4 px-4">
-      <div className="flex items-center justify-between p-6">
-        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent tracking-wide hover:scale-105 transition-transform duration-200">
-          {t('This Dictation')}
+      <div className="flex items-center justify-between pt-2 pb-4">
+        <h1 className="text-5xl font-black bg-gradient-to-br from-fuchsia-500 via-purple-600 to-pink-500 bg-[length:200%_200%] bg-clip-text text-transparent tracking-tight hover:scale-105 transition-all duration-300 hover:tracking-wide relative animate-[shimmer_3s_ease-in-out_infinite]">
+          {t('ThisDictation Helper')}
         </h1>
       </div>
       <div className="flex items-center gap-2 sm:gap-4">
