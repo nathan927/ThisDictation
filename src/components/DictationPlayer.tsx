@@ -209,7 +209,7 @@ const DictationPlayer: React.FC = () => {
           <button
             onClick={handleDeleteAll}
             disabled={wordSets.length === 0}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 whitespace-nowrap"
           >
             {t('Delete All')}
           </button>
