@@ -16,9 +16,11 @@ const Header: React.FC = () => {
 
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4 px-4">
-      <h1 className="text-3xl font-bold text-gray-900">
-        {t('ThisDictation Helper')}
-      </h1>
+      <div className="flex items-center justify-between p-6">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent tracking-wide hover:scale-105 transition-transform duration-200">
+          {t('This Dictation')}
+        </h1>
+      </div>
       <div className="flex items-center gap-2 sm:gap-4">
         <LanguageSelector />
         <UserGuide />

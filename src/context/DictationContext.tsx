@@ -35,7 +35,7 @@ export const DictationContext = createContext<DictationContextType>({
   currentWordIndex: 0,
   isPlaying: false,
   settings: {
-    repetitions: 3,
+    repetitions: 2,
     interval: 2,
     speed: 1,
     pronunciation: 'English',
@@ -70,7 +70,7 @@ export const DictationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const [settings, setSettings] = useState<DictationSettings>({
-    repetitions: 3,
+    repetitions: 2,
     interval: 2,
     speed: 1,
     pronunciation: getDefaultPronunciation(),
