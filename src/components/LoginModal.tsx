@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import Snackbar from './Snackbar';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     const [rememberMe, setRememberMe] = useState(false);
     const { login } = useAuth();
     const { t } = useTranslation();
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +30,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             onClose();
         } else {
             setError(t('Invalid username or password'));
+            setSnackbarOpen(true);
         }
     };
 
@@ -123,6 +126,11 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                     </div>
                 </Dialog.Panel>
             </div>
+            <Snackbar
+                message={t('Login failed: Invalid username or password')}
+                isOpen={snackbarOpen}
+                onClose={() => setSnackbarOpen(false)}
+            />
         </Dialog>
     );
 }

@@ -32,9 +32,9 @@ const Snackbar: React.FC<SnackbarProps> = ({
           : 'opacity-0 -translate-y-4 pointer-events-none'
       }`}
     >
-      <div className="bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg rounded-xl px-6 py-4 flex items-center space-x-3 backdrop-blur-lg bg-opacity-95 border border-white/20">
-        <CheckCircleIcon className="h-6 w-6 text-white animate-bounce" />
-        <span className="text-white font-semibold tracking-wide">{message}</span>
+      <div className="bg-gradient-to-r from-green-400 to-emerald-500 shadow-md rounded-lg px-4 py-2 flex items-center space-x-2 backdrop-blur-md bg-opacity-90 border border-white/20">
+        <CheckCircleIcon className="h-5 w-5 text-white" />
+        <span className="text-white font-medium tracking-normal">{message}</span>
       </div>
     </div>
   );
