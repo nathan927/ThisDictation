@@ -242,7 +242,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 message={snackbarMessage}
                 isOpen={snackbarOpen}
                 onClose={() => setSnackbarOpen(false)}
-                isError={!!error} // Pass error status to Snackbar
+                type={error ? 'error' : 'success'} // Use the new 'type' prop
             />
         </Dialog>
     );
